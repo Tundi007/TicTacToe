@@ -1,5 +1,3 @@
-using System.Numerics;
-using MathNet.Numerics.LinearAlgebra;
 namespace Connect4;
 
 class MyUI
@@ -52,14 +50,14 @@ class MyUI
 
     }
 
-    public static int GameInterface_Function(string error_String, Matrix<Single> gameBoard_SingleMatrix,int player_Int, int lastColumn_Int, string botInfo_String)
+    public static (int,int) GameInterface_Function(string error_String, int[,] gameBoard_SingleMatrix,int player_Int, int lastColumn_Int, int lastRow_Int, string botInfo_String)
     {
 
-        return KeyMenu_Function(error_String, gameBoard_SingleMatrix, player_Int, lastColumn_Int, botInfo_String);
+        return KeyMenu_Function(error_String, gameBoard_SingleMatrix, player_Int, lastColumn_Int , lastRow_Int, botInfo_String);
 
     }
 
-    private static int KeyMenu_Function(string error_String, Matrix<Single> menuItems_ArrayString2D, int player_Int, int lastColumn_Int,string botInfo_String)
+    private static (int,int) KeyMenu_Function(string error_String, int[,] menuItems_ArrayString2D, int player_Int, int lastColumn_Int, int lastRow_Int,string botInfo_String)
     {
 
         string player_string = "O";
@@ -67,8 +65,8 @@ class MyUI
         if(player_Int == 2)
             player_string = "X";
 
-        (int menuPointerColumn_Int, string hint_String) =
-            (lastColumn_Int, $"Player{player_Int}'s Turn ({player_string})\nUse Arrow Keys To Navigate, \"Enter\" To Select, \"Escape\": Main Menu ())");
+        (int menuPointerColumn_Int, int menuPointerRow_Int, string hint_String) =
+            (lastColumn_Int, lastRow_Int, $"Player{player_Int}'s Turn ({player_string})\nUse Arrow Keys To Navigate, \"Enter\" To Select, \"Escape\": Main Menu ())");
 
         while (true)
         {
@@ -78,7 +76,7 @@ class MyUI
             if(!string.IsNullOrWhiteSpace(botInfo_String))
                 System.Console.WriteLine(botInfo_String);            
 
-            ShowMenu_Function(menuItems_ArrayString2D, menuPointerColumn_Int);
+            ShowMenu_Function(menuItems_ArrayString2D, menuPointerColumn_Int, menuPointerRow_Int);
 
             if(!string.IsNullOrWhiteSpace(error_String))
                 System.Console.WriteLine(error_String);
@@ -91,10 +89,10 @@ class MyUI
             {
 
                 case ConsoleKey.Enter:
-                    return menuPointerColumn_Int;
+                    return (menuPointerColumn_Int,menuPointerRow_Int);
 
                 case ConsoleKey.A:
-                    return 10 + menuPointerColumn_Int;
+                    return (10 + menuPointerColumn_Int, menuPointerRow_Int);
 
                 case ConsoleKey.Escape:
                 {
@@ -107,7 +105,7 @@ class MyUI
                     {            
 
                         if(exit_Bool)
-                            return -1;
+                            return (-1,-1);
 
                         if(valid_Bool)
                             (mainMenu_Bool,pointer_Bool) = (!mainMenu_Bool,!pointer_Bool);
@@ -115,31 +113,119 @@ class MyUI
                     }
 
                     if(mainMenu_Bool)
-                        return -2;
+                        return (-2,-2);
                     
                     break;
                     
                 }
 
                 case ConsoleKey.LeftArrow:
-                    {
+                {                    
 
-                        if (menuPointerColumn_Int < 1) break;
+                    if(menuPointerColumn_Int < 1) break;
 
+                    int backupColumn_Int =  menuPointerColumn_Int;
+
+                    while(menuItems_ArrayString2D[menuPointerRow_Int, menuPointerColumn_Int] != 0 &
+                        menuPointerColumn_Int < 3 &
+                            menuPointerColumn_Int >= 0 &
+                                menuPointerRow_Int < 3 &
+                                    menuPointerRow_Int >= 0)
                         menuPointerColumn_Int--;
 
-                    }
-                    break;
-
-                case ConsoleKey.RightArrow:
+                    if(menuItems_ArrayString2D[menuPointerRow_Int, menuPointerColumn_Int] != 0)
                     {
 
-                        if (menuPointerColumn_Int > 3) break;
+                        menuPointerColumn_Int = backupColumn_Int;
 
-                        menuPointerColumn_Int++;
+                        break;
 
                     }
-                    break;
+
+                    menuPointerColumn_Int--;
+
+                }break;
+
+                case ConsoleKey.RightArrow:
+                {
+
+                    if (menuPointerColumn_Int >= 2) break;
+
+                    int backupColumn_Int =  menuPointerColumn_Int;
+
+                    while(menuItems_ArrayString2D[menuPointerRow_Int, menuPointerColumn_Int] != 0 &
+                        menuPointerColumn_Int < 3 &
+                            menuPointerColumn_Int >= 0 &
+                                menuPointerRow_Int < 3 &
+                                    menuPointerRow_Int >= 0)
+                        menuPointerColumn_Int++;
+
+                    if(menuItems_ArrayString2D[menuPointerRow_Int, menuPointerColumn_Int] != 0)
+                    {
+
+                        menuPointerColumn_Int = backupColumn_Int;
+
+                        break;
+
+                    }
+
+                    menuPointerColumn_Int++;
+
+                }break;
+
+                case ConsoleKey.UpArrow:
+                {
+
+                    if (menuPointerRow_Int < 1) break;
+
+                    int backupRow_Int =  menuPointerRow_Int;
+
+                    while(menuItems_ArrayString2D[menuPointerRow_Int, menuPointerColumn_Int] != 0 &
+                        menuPointerColumn_Int < 3 &
+                            menuPointerColumn_Int > 0 &
+                                menuPointerRow_Int < 3 &
+                                    menuPointerRow_Int > 0)
+                        menuPointerRow_Int--;
+
+                    if(menuItems_ArrayString2D[menuPointerRow_Int, menuPointerColumn_Int] != 0)
+                    {
+
+                        menuPointerRow_Int = backupRow_Int;
+
+                        break;
+
+                    }
+
+                    menuPointerRow_Int--;
+
+                }break;
+
+                case ConsoleKey.DownArrow:
+                {
+
+                    if (menuPointerRow_Int >= 2) break;
+
+                    int backupRow_Int =  menuPointerRow_Int;
+
+                    while(menuItems_ArrayString2D[menuPointerRow_Int, menuPointerColumn_Int] != 0 &
+                        menuPointerColumn_Int < 3 &
+                            menuPointerColumn_Int > 0 &
+                                menuPointerRow_Int < 3 &
+                                    menuPointerRow_Int > 0)
+                        menuPointerRow_Int++;
+
+                    if(menuItems_ArrayString2D[menuPointerRow_Int, menuPointerColumn_Int] != 0)
+                    {
+
+                        menuPointerRow_Int = backupRow_Int;
+
+                        break;
+
+                    }
+
+                    menuPointerRow_Int++;
+
+                }break;
 
                 default:
                     error_String = "Undefined Input";
@@ -151,64 +237,48 @@ class MyUI
 
     }
 
-    public static void ShowMenu_Function(Matrix<Single> menuItems_ArrayString2D, int menuPointerColumn_Int)
+    public static void ShowMenu_Function(int[,] menuItems_ArrayString2D, int menuPointerColumn_Int, int menuPointerRow_Int)
     {
 
         System.Console.WriteLine();
 
-        for (int columnNumber_Int = 0; columnNumber_Int < 5; columnNumber_Int++)
+        for (int rowNumber_Int = 0; rowNumber_Int < 3 ; rowNumber_Int++)
         {
 
-            if (columnNumber_Int == menuPointerColumn_Int)
+            for (int columnNumber_Int = 0; columnNumber_Int < 3; columnNumber_Int++)
             {
 
-                System.Console.Write("  V ");
+                if(columnNumber_Int == menuPointerColumn_Int & rowNumber_Int == menuPointerRow_Int)
+                {
 
-            }
-            else
-            {
+                    System.Console.Write("[ ]");
 
-                System.Console.Write("    ");
-
-            }
-
-        }
-
-        System.Console.WriteLine();
-
-        for (int rowNumber_Int = 4; rowNumber_Int > -1; rowNumber_Int--)
-        {
-
-            for (int columnNumber_Int = 0; columnNumber_Int < 5; columnNumber_Int++)
-            {
-
+                }else
                 if (menuItems_ArrayString2D[rowNumber_Int, columnNumber_Int] == 1)
                 {
 
-                    System.Console.Write("| X ");
+                    System.Console.Write(" X ");
 
-                }
+                }else
                 if (menuItems_ArrayString2D[rowNumber_Int, columnNumber_Int] == 2)
                 {
 
-                    System.Console.Write("| O ");
+                    System.Console.Write(" O ");
 
-                }
-
+                }else
                 if (menuItems_ArrayString2D[rowNumber_Int, columnNumber_Int] == 0)
                 {
 
-                    System.Console.Write("| - ");
+                    System.Console.Write(" - ");
 
                 }
 
             }
 
-            System.Console.WriteLine("|");
+            System.Console.WriteLine();
 
         }
 
     }
-
 
 }

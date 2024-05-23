@@ -1,11 +1,11 @@
-using MathNet.Numerics.LinearAlgebra;
-
 namespace Connect4;
 
 class Game
 {
 
     private static int lastColumn_Int = 0;
+
+    private static int lastRow_Int = 0;
 
     private static int player1_Int;
 
@@ -229,7 +229,13 @@ class Game
             {
 
                 if(botFirst_Bool)
-                    Action_Function(Bot.Bot_Function(), player2_Int);
+                {
+
+                    (int column_Int ,int row_int)= Bot.Bot_Function();
+                
+                    Action_Function(column_Int, row_int, player2_Int);
+
+                }
                 else if(!PlayerTurn_Function(player1_Int))
                     break;
                 
@@ -243,7 +249,13 @@ class Game
                         break;
 
                 }else
-                    Action_Function(Bot.Bot_Function(), player2_Int);
+                {
+
+                    (int column_Int ,int row_int)= Bot.Bot_Function();
+                
+                    Action_Function(column_Int, row_int, player2_Int);
+                    
+                }
 
                 if(CheckGoal_Function())
                     break;
@@ -275,11 +287,25 @@ class Game
         while (true)
         {
 
-            int elementColumn_Int = MyUI.GameInterface_Function(error_String, GameBoard.GameBoardStatus_Function(), player_Int, lastColumn_Int,botInfo_String);
+            for (int row_Int = 0; row_Int < 3; row_Int++)
+            {
+
+                lastRow_Int = row_Int;
+
+                lastColumn_Int = GameBoard.GameBoardStatus_Function().Row(row_Int).ToList().IndexOf(0);
+
+                if(lastColumn_Int > -1)
+                    break;
+
+            }
+                
+            (int elementColumn_Int, int elementRow_Int) = MyUI.GameInterface_Function(error_String, GameBoard.GameBoardStatus_Function(), player_Int, lastColumn_Int, lastRow_Int,botInfo_String);
 
             error_String = "";
 
             lastColumn_Int = elementColumn_Int;
+
+            lastRow_Int = elementRow_Int;
 
             if(elementColumn_Int == -1)
                 PrematureExit_Function();
@@ -295,7 +321,7 @@ class Game
                 lastColumn_Int = elementColumn_Int - 10;
                 
             }
-            else if(Action_Function(elementColumn_Int, player_Int))                
+            else if(Action_Function(elementColumn_Int, elementColumn_Int, elementRow_Int))                
                 return true;
             else
                 error_String = $"Can't Place There (Column: {elementColumn_Int + 1})";
@@ -303,11 +329,11 @@ class Game
 
     }
 
-    private static bool Action_Function(int elementColumn_Int, int ID_Int)
+    private static bool Action_Function(int elementColumn_Int, int elementRow_Int, int ID_Int)
     {
         
         if(GameBoard.ElementValidColumn_Function(
-            GameBoard.GameBoardStatus_Function(), elementColumn_Int, out int elementRow_Int))
+            GameBoard.GameBoardStatus_Function(), elementColumn_Int, elementRow_Int))
             if(GameBoard.ElementPlace_Function(elementRow_Int, elementColumn_Int, ID_Int))
                 return true;
 
@@ -320,31 +346,43 @@ class Game
 
         int winner_int = -1;
 
-        for (int corner_Int = 1; corner_Int < 5; corner_Int++)
+        Matrix<float> mirror_SingleMatrix = Matrix<float>.Build.Dense(3,3,0);
+
+        for (int i = 0; i < 3; i++)
+        {
+
+            mirror_SingleMatrix[2-i,i] = 1;
+            
+        }
+
+        for (int ID_Int = 1; ID_Int < 3; ID_Int++)
         {
 
             if(winner_int == player2_Int | winner_int == player1_Int)
                 break;
 
-            GameBoard.SubMatrix_Function(GameBoard.GameBoardStatus_Function(),
-                corner_Int, out Matrix<float> fourByFour_SingleMatrix);
-
-            Matrix<float> mirror_SingleMatrix = Matrix<float>.Build.Dense(4,4,0);
-
-            for (int i = 0; i < 4; i++)
+            if(GameBoard.GameBoardStatus_Function().Diagonal().ToList().All(x => x == ID_Int))
             {
 
-                mirror_SingleMatrix[3-i,i] = 1;
-                
+                winner_int = ID_Int;
+
+                break;
+
             }
 
-            for (int ID_Int = 1; ID_Int < 3; ID_Int++)
+            if(GameBoard.GameBoardStatus_Function().Multiply(mirror_SingleMatrix).Diagonal().ToList().All(x => x == ID_Int))
             {
 
-                if(winner_int == player2_Int | winner_int == player1_Int)
-                    break;
+                winner_int = ID_Int;
 
-                if(fourByFour_SingleMatrix.Diagonal().ToList().All(x => x == ID_Int))
+                break;
+
+            }
+
+            for (int index_Int = 0; index_Int < 3; index_Int++)
+            {
+
+                if(GameBoard.GameBoardStatus_Function().Row(index_Int).ToList().All(x => x == ID_Int))
                 {
 
                     winner_int = ID_Int;
@@ -353,7 +391,7 @@ class Game
 
                 }
 
-                if(fourByFour_SingleMatrix.Multiply(mirror_SingleMatrix).Diagonal().ToList().All(x => x == ID_Int))
+                if(GameBoard.GameBoardStatus_Function().Cast<int>().All(x => x == ID_Int))
                 {
 
                     winner_int = ID_Int;
@@ -361,42 +399,20 @@ class Game
                     break;
 
                 }
-
-                for (int index_Int = 0; index_Int < 4; index_Int++)
-                {
-
-                    if(fourByFour_SingleMatrix.Row(index_Int).ToList().All(x => x == ID_Int))
-                    {
-
-                        winner_int = ID_Int;
-
-                        break;
-
-                    }
-
-                    if(fourByFour_SingleMatrix.Column(index_Int).ToList().All(x => x == ID_Int))
-                    {
-
-                        winner_int = ID_Int;
-
-                        break;
-
-                    }
-                    
-                }
-
+                
             }
 
         }
 
-        if(winner_int == -1 & GameBoard.GameBoardStatus_Function().Find(x => x == 0) == null)
+
+        if(winner_int == -1 & GameBoard.GameBoardStatus_Function().Cast<int>().Find(x => x == 0) == null)
         {
 
             Console.Clear();
             
             System.Console.Write("Tied, Game Over!");
 
-            MyUI.ShowMenu_Function(GameBoard.GameBoardStatus_Function(), -1);
+            MyUI.ShowMenu_Function(GameBoard.GameBoardStatus_Function(), -1, -1);
 
             System.Console.WriteLine("Press Anything To Continue");
 
@@ -420,7 +436,7 @@ class Game
             
             System.Console.Write(player_String);
 
-            MyUI.ShowMenu_Function(GameBoard.GameBoardStatus_Function(), -1);
+            MyUI.ShowMenu_Function(GameBoard.GameBoardStatus_Function(), -1,-1);
 
             System.Console.WriteLine("Press Anything To Continue");
 
@@ -446,7 +462,7 @@ class Game
 
             System.Console.Write("You Lost, Better Luck Next Time!");
 
-            MyUI.ShowMenu_Function(GameBoard.GameBoardStatus_Function(), -1);
+            MyUI.ShowMenu_Function(GameBoard.GameBoardStatus_Function(), -1,-1);
 
             System.Console.WriteLine("Press Anything To Continue");
 

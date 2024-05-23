@@ -1,6 +1,4 @@
 using System.Security.Cryptography;
-using MathNet.Numerics;
-using MathNet.Numerics.LinearAlgebra;
 namespace Connect4;
 
 class Bot
@@ -16,154 +14,190 @@ class Bot
 
     private static int botID_Int = 2;
 
-    public static int Bot_Function()
+    public static (int,int) Bot_Function()
     {
 
         int bestCost_Int = -10000;
 
-        int bestMove_Int = -1;
+        int bestColumnMove_Int = -1;
 
-        int[] botMaxPieces_Int = new int[5];
+        int bestRowMove_Int = -1;
 
-        int[] playerMaxPieces_Int = new int[5];
+        List<int[]> botMaxPieces_Int = [];
 
-        for (int elementColumn_Int = 0; elementColumn_Int < 5; elementColumn_Int++)
+        int[] playerMaxPieces_Int = new int[3];
+
+        for (int elementColumn_Int = 0; elementColumn_Int < 3; elementColumn_Int++)
         {
 
-            botMaxPieces_Int[elementColumn_Int] = -100;
+            botMaxPieces_Int.Add(new int[2]);
 
-            if(GameBoard.ElementValidColumn_Function(GameBoard.GameBoardStatus_Function(), elementColumn_Int, out int elementRow_Int))
+            for (int elementRow_Int = 0; elementRow_Int < 3; elementRow_Int++)
             {
 
-                playerMaxPieces_Int[elementColumn_Int] = -100;
+                botMaxPieces_Int[elementColumn_Int][0] = -100;
 
-                Matrix<float> botBoard_FloatMatrix = Matrix<float>.Build.DenseOfMatrix(GameBoard.GameBoardStatus_Function());
+                botMaxPieces_Int[elementColumn_Int][1] = elementRow_Int;
 
-                Vector<float> elementVector_FloatVector = Vector<float>.Build.Dense(5);
-
-                botBoard_FloatMatrix.
-                    Column(elementColumn_Int).CopyTo(elementVector_FloatVector);
-
-                elementVector_FloatVector[elementRow_Int] = botID_Int;
-
-                botBoard_FloatMatrix.SetColumn(elementColumn_Int,elementVector_FloatVector);
-
-                if(upgradedBot_Bool)
-                    botMaxPieces_Int[elementColumn_Int] = UpgradedMax_Function(botBoard_FloatMatrix, botID_Int);
-                else
-                    botMaxPieces_Int[elementColumn_Int] = Max_Function(botBoard_FloatMatrix, botID_Int);
-            
-                if(botMaxPieces_Int[elementColumn_Int] == 100)
+                if(GameBoard.ElementValidColumn_Function(GameBoard.GameBoardStatus_Function(), elementColumn_Int, elementRow_Int))
                 {
 
-                    ShowSteps(botBoard_FloatMatrix,100,0,elementColumn_Int);
-                
-                    return elementColumn_Int;
-                    
-                }
+                    playerMaxPieces_Int[elementColumn_Int] = -100;
 
+                    int[,] botBoard_2dArrayInt = new int[3,3];
 
-                for (int playerColumn_Int = 0; playerColumn_Int < 5; playerColumn_Int++)
-                {
+                    int[] elementVector_FloatVector = new int[3];
 
-                    if(GameBoard.ElementValidColumn_Function(botBoard_FloatMatrix, playerColumn_Int, out int playerRow_Int))
+                    // botBoard_2dArrayInt
+                    // .Column(elementColumn_Int).CopyTo(elementVector_FloatVector)
+                        ;
+
+                    elementVector_FloatVector[elementRow_Int] = botID_Int;
+
+                    // botBoard_2dArrayInt
+                    // .SetColumn(elementColumn_Int,elementVector_FloatVector)
+                    ;
+
+                    int number_Int = 0;
+
+                    if(upgradedBot_Bool)
+                        number_Int = UpgradedMax_Function(botBoard_2dArrayInt, botID_Int);
+                    else
+                        number_Int = Max_Function(botBoard_2dArrayInt, botID_Int);
+
+                    if(botMaxPieces_Int[elementColumn_Int][0] < number_Int)
                     {
 
-                        int min_Int = 0;
-
-                        Matrix<float> playerBoard_FloatMatrix = Matrix<float>.Build.DenseOfMatrix(botBoard_FloatMatrix);
-
-                        playerBoard_FloatMatrix[playerRow_Int,playerColumn_Int] = playerID_Int;
-
-                        if(upgradedBot_Bool)
-                            min_Int = UpgradedMax_Function(playerBoard_FloatMatrix, playerID_Int);
-                        else
-                            min_Int = Max_Function(playerBoard_FloatMatrix, playerID_Int);
-
-                        if(min_Int == 100)
-                            min_Int = 50;
-
-                        if(playerMaxPieces_Int[elementColumn_Int] < min_Int)
-                            playerMaxPieces_Int[elementColumn_Int] = min_Int;
-
-                        if(visibleAlgorithm_Bool)
-                            ShowSteps(playerBoard_FloatMatrix,botMaxPieces_Int[elementColumn_Int],min_Int,-1);
-
-                    }
+                        botMaxPieces_Int[elementColumn_Int][0] = number_Int;
+                        
+                        botMaxPieces_Int[elementColumn_Int][1] = elementRow_Int;
                     
+                    }
+                
+                    if(botMaxPieces_Int[elementColumn_Int][0] == 100)
+                    {
+
+                        ShowSteps(botBoard_2dArrayInt,100,0,elementColumn_Int, elementRow_Int);
+                    
+                        return (elementColumn_Int,elementRow_Int);
+                        
+                    }
+
+
+                    for (int playerColumn_Int = 0; playerColumn_Int < 3; playerColumn_Int++)
+                    {
+
+                        for (int playerRow_Int = 0; playerRow_Int < 3; playerRow_Int++)
+                        {
+
+                            if(GameBoard.ElementValidColumn_Function(botBoard_2dArrayInt, playerColumn_Int, playerRow_Int))
+                            {
+
+                                int min_Int = 0;
+
+                                int[,] playerBoard_2dArrayInt =new int[3,3];
+
+                                playerBoard_2dArrayInt[playerRow_Int,playerColumn_Int] = playerID_Int;
+
+                                if(upgradedBot_Bool)
+                                    min_Int = UpgradedMax_Function(playerBoard_2dArrayInt, playerID_Int);
+                                else
+                                    min_Int = Max_Function(playerBoard_2dArrayInt, playerID_Int);
+
+                                if(min_Int == 100)
+                                    min_Int = 50;
+
+                                if(playerMaxPieces_Int[elementColumn_Int] < min_Int)
+                                    playerMaxPieces_Int[elementColumn_Int] = min_Int;
+
+                                if(visibleAlgorithm_Bool)
+                                    ShowSteps(playerBoard_2dArrayInt,botMaxPieces_Int[elementColumn_Int][0],min_Int,-1,-1);
+
+                            }
+
+                        }
+                        
+                    }
+
                 }
 
-            }
+                if(clumsyBot_Bool)
+                {
 
-            if(clumsyBot_Bool)
-            {
+                    playerMaxPieces_Int[elementColumn_Int] += RandomNumberGenerator.GetInt32(99,101);
 
-                playerMaxPieces_Int[elementColumn_Int] += RandomNumberGenerator.GetInt32(99,101);
+                    playerMaxPieces_Int[elementColumn_Int] *= RandomNumberGenerator.GetInt32(2,5);
 
-                playerMaxPieces_Int[elementColumn_Int] *= RandomNumberGenerator.GetInt32(2,5);
+                    botMaxPieces_Int[elementColumn_Int][0] += RandomNumberGenerator.GetInt32(99,101);
 
-                botMaxPieces_Int[elementColumn_Int] += RandomNumberGenerator.GetInt32(99,101);
+                    botMaxPieces_Int[elementColumn_Int][0] *= RandomNumberGenerator.GetInt32(2,5);
 
-                botMaxPieces_Int[elementColumn_Int] *= RandomNumberGenerator.GetInt32(2,5);
+                }
 
             }
 
         }
 
-        for (int index_Int = 0; index_Int < 5; index_Int++)
+        for (int index_Int = 0; index_Int < 3; index_Int++)
         {
 
-            if(bestCost_Int < botMaxPieces_Int[index_Int] - playerMaxPieces_Int[index_Int])
+            if(bestCost_Int < botMaxPieces_Int[index_Int][0] - playerMaxPieces_Int[index_Int])
             {
 
-                bestMove_Int = index_Int;
+                bestColumnMove_Int = index_Int;
 
-                bestCost_Int = botMaxPieces_Int[index_Int] - playerMaxPieces_Int[index_Int];
+                bestRowMove_Int = botMaxPieces_Int[index_Int][1];
+
+                bestCost_Int = botMaxPieces_Int[index_Int][0] - playerMaxPieces_Int[index_Int];
                 
             }
 
         }
 
-        System.Console.WriteLine(bestMove_Int);
-
-        return bestMove_Int;
+        return (bestColumnMove_Int ,bestRowMove_Int);
     
     }
 
-    private static int Max_Function(Matrix<float> max_FloatMatrix, int ID_Int)
+    private static int Max_Function(int[,] max_2dArrayInt, int ID_Int)
     {
 
         int highestCount_Int = 0;
 
         if(upgradedBot_Bool){
 
-            Matrix<float> mirror_SingleMatrix = Matrix<float>.Build.Dense(5,5,0);
+            int[,] mirror_2DArrayInt;
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             {
 
-                mirror_SingleMatrix[4-i,i] = 1;
+                // mirror_2DArrayInt[2-i,i] = 1;
                 
             }
 
-            highestCount_Int = UpgradedVectorElementCount_Function(max_FloatMatrix.Diagonal(), ID_Int);
+            highestCount_Int = UpgradedVectorElementCount_Function([]
+                // max_2dArrayInt.Diagonal()
+                , ID_Int);
 
-            int mirroredDiagonal_Int = UpgradedVectorElementCount_Function(max_FloatMatrix.Multiply(mirror_SingleMatrix).Diagonal(), ID_Int);
+            int mirroredDiagonal_Int =UpgradedVectorElementCount_Function([]
+                // max_2dArrayInt.Multiply(mirror_2DArrayInt).Diagonal()
+                , ID_Int);
 
             if (highestCount_Int < mirroredDiagonal_Int)
                 highestCount_Int = mirroredDiagonal_Int;
             
         }
 
-        for (int index_Int = 0; index_Int < 5; index_Int++)
+        for (int index_Int = 0; index_Int < 3; index_Int++)
         {
 
-            int countRow_Int = VectorElementCount_Function(max_FloatMatrix.Row(index_Int), ID_Int);
+            int countRow_Int = 0;
+            // VectorElementCount_Function(max_2dArrayInt.Row(index_Int), ID_Int);
 
             if (highestCount_Int < countRow_Int)
                 highestCount_Int = countRow_Int;
 
-            int countColumn_Int = VectorElementCount_Function(max_FloatMatrix.Column(index_Int), ID_Int);
+            int countColumn_Int = 0;
+            // VectorElementCount_Function(max_2dArrayInt.Column(index_Int), ID_Int);
 
             if (highestCount_Int < countColumn_Int)
                 highestCount_Int = countColumn_Int;
@@ -174,69 +208,60 @@ class Bot
 
     }
     
-    private static int UpgradedMax_Function(Matrix<float> max_FloatMatrix, int ID_Int)
+    private static int UpgradedMax_Function(int[,] max_2dArrayInt, int ID_Int)
     {
 
         int highestCount_Int = 0;
 
-        int corner1_Int = 0;
+        int[,] copy_2dArrayInt;
 
-        int corner2_Int = 0;
+        int[,] mirror_2DArrayInt;
 
-        for (int repeat_Int = 0; repeat_Int < 4; repeat_Int++)
+        for (int i = 0; i < 3; i++)
         {
 
-            Matrix<float> copy_FloatMatrix = Matrix<float>.Build.DenseOfMatrix(max_FloatMatrix.SubMatrix(corner1_Int,4,corner2_Int,4));
-
-            if(corner2_Int == 1)
-                corner1_Int--;
-            else
-            if(corner1_Int == 1)
-                corner2_Int++;
-            else
-                corner1_Int++;
-
-            Matrix<float> mirror_SingleMatrix = Matrix<float>.Build.Dense(4,4,0);
-
-            for (int i = 0; i < 4; i++)
-            {
-
-                mirror_SingleMatrix[3-i,i] = 1;
-                
-            }
-
-            int diagonal_int = UpgradedVectorElementCount_Function(copy_FloatMatrix.Diagonal(), ID_Int);
-
-            int mirroredDiagonal_Int = UpgradedVectorElementCount_Function(copy_FloatMatrix.Multiply(mirror_SingleMatrix).Diagonal(), ID_Int);
-
-            if(highestCount_Int < mirroredDiagonal_Int)
-                highestCount_Int = mirroredDiagonal_Int;
-
-            if(highestCount_Int < diagonal_int)
-                highestCount_Int = diagonal_int;
-
-            for (int index_Int = 0; index_Int < 4; index_Int++)
-            {
-
-                int countRow_Int = UpgradedVectorElementCount_Function(copy_FloatMatrix.Row(index_Int), ID_Int);
-
-                if (highestCount_Int < countRow_Int)
-                    highestCount_Int = countRow_Int;
-
-                int countColumn_Int = UpgradedVectorElementCount_Function(copy_FloatMatrix.Column(index_Int), ID_Int);
-
-                if (highestCount_Int < countColumn_Int)
-                    highestCount_Int = countColumn_Int;
-
-            }
+            // mirror_2DArrayInt[2-i,i] = 1;
             
         }
+
+        int diagonal_int = UpgradedVectorElementCount_Function([]
+            // copy_2dArrayInt.Diagonal()
+            , ID_Int);
+
+        int mirroredDiagonal_Int = UpgradedVectorElementCount_Function([]
+            // copy_2dArrayInt.Multiply(mirror_2DArrayInt).Diagonal()
+            , ID_Int);
+
+        if(highestCount_Int < mirroredDiagonal_Int)
+            highestCount_Int = mirroredDiagonal_Int;
+
+        if(highestCount_Int < diagonal_int)
+            highestCount_Int = diagonal_int;
+
+        for (int index_Int = 0; index_Int < 3; index_Int++)
+        {
+
+            int countRow_Int = UpgradedVectorElementCount_Function([]
+                // copy_2dArrayInt.Row(index_Int)
+                , ID_Int);
+
+            if (highestCount_Int < countRow_Int)
+                highestCount_Int = countRow_Int;
+
+            int countColumn_Int = UpgradedVectorElementCount_Function([]
+                // copy_2dArrayInt.Column(index_Int)
+                , ID_Int);
+
+            if (highestCount_Int < countColumn_Int)
+                highestCount_Int = countColumn_Int;
+
+        }            
 
         return highestCount_Int;
 
     }
 
-    private static int VectorElementCount_Function(Vector<float> array_FloatVector, int elementID_Int)
+    private static int VectorElementCount_Function(int[] array_FloatVector, int elementID_Int)
     {
 
         List<float> list_FloatList = [..array_FloatVector];
@@ -261,7 +286,7 @@ class Bot
     
     }
     
-    private static int UpgradedVectorElementCount_Function(Vector<float> array_FloatVector, int elementID_Int)
+    private static int UpgradedVectorElementCount_Function(int[] array_FloatVector, int elementID_Int)
     {
 
         List<float> list_FloatList = [..array_FloatVector];
@@ -271,10 +296,10 @@ class Bot
         if(list_FloatList.FindAll(x => x != elementID_Int && x != 0).Count > 0)
             return 0;
 
-        if(list_FloatList.FindAll(x => x == elementID_Int && x != 0).Count == 4)
+        if(list_FloatList.FindAll(x => x == elementID_Int && x != 0).Count == 3)
             return 100;
 
-        if(list_FloatList.FindAll(x => x == elementID_Int || x == 0).Count == 4)
+        if(list_FloatList.FindAll(x => x == elementID_Int || x == 0).Count == 3)
         {
 
             while(list_FloatList.Count > 1)
@@ -387,7 +412,7 @@ class Bot
     
     }
 
-    private static void ShowSteps(Matrix<Single> board_FloatMatrix, int botPoints_Int, int playerPoints_Int, int columnNumber_Int)
+    private static void ShowSteps(int[,] board_2dArrayInt, int botPoints_Int, int playerPoints_Int, int columnNumber_Int, int rowNumber_Int)
     {
 
         Console.Clear();
@@ -404,7 +429,7 @@ class Bot
 
                 Console.Clear();
                         
-                MyUI.ShowMenu_Function(board_FloatMatrix,columnNumber_Int);
+                MyUI.ShowMenu_Function(board_2dArrayInt,columnNumber_Int, rowNumber_Int);
 
                 System.Console.WriteLine($"Check Mate!");
 
@@ -418,7 +443,7 @@ class Bot
 
         }
         
-        MyUI.ShowMenu_Function(board_FloatMatrix,-1);
+        MyUI.ShowMenu_Function(board_2dArrayInt,-1,-1);
 
         System.Console.WriteLine($"You vs Bot: {playerPoints_Int} - {botPoints_Int} [Points]");
 
