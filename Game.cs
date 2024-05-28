@@ -286,18 +286,6 @@ class Game
 
         while (true)
         {
-
-            for (int row_Int = 0; row_Int < 3; row_Int++)
-            {
-
-                lastRow_Int = row_Int;
-
-                lastColumn_Int = GameBoard.GameBoardStatus_Function().Row(row_Int).ToList().IndexOf(0);
-
-                if(lastColumn_Int > -1)
-                    break;
-
-            }
                 
             (int elementColumn_Int, int elementRow_Int) = MyUI.GameInterface_Function(error_String, GameBoard.GameBoardStatus_Function(), player_Int, lastColumn_Int, lastRow_Int,botInfo_String);
 
@@ -332,8 +320,9 @@ class Game
     private static bool Action_Function(int elementColumn_Int, int elementRow_Int, int ID_Int)
     {
         
-        if(GameBoard.ElementValidColumn_Function(
-            GameBoard.GameBoardStatus_Function(), elementColumn_Int, elementRow_Int))
+        if(GameBoard.GameBoardStatus_Function()
+            [elementRow_Int,
+                elementColumn_Int] == 0)
             if(GameBoard.ElementPlace_Function(elementRow_Int, elementColumn_Int, ID_Int))
                 return true;
 
@@ -346,14 +335,12 @@ class Game
 
         int winner_int = -1;
 
-        Matrix<float> mirror_SingleMatrix = Matrix<float>.Build.Dense(3,3,0);
-
-        for (int i = 0; i < 3; i++)
-        {
-
-            mirror_SingleMatrix[2-i,i] = 1;
-            
-        }
+        (int[][]rows_2DArrayInt,
+            int[][]columns_2DArrayInt,
+                int[]diagonal_ArrayInt,
+                    int[]reverseDiagonal_ArrayInt) =
+                        GameBoard.VectorGenerator_Function(
+                            GameBoard.GameBoardStatus_Function());
 
         for (int ID_Int = 1; ID_Int < 3; ID_Int++)
         {
@@ -361,7 +348,7 @@ class Game
             if(winner_int == player2_Int | winner_int == player1_Int)
                 break;
 
-            if(GameBoard.GameBoardStatus_Function().Diagonal().ToList().All(x => x == ID_Int))
+            if(diagonal_ArrayInt.ToList().All(x => x == ID_Int))
             {
 
                 winner_int = ID_Int;
@@ -370,7 +357,7 @@ class Game
 
             }
 
-            if(GameBoard.GameBoardStatus_Function().Multiply(mirror_SingleMatrix).Diagonal().ToList().All(x => x == ID_Int))
+            if(reverseDiagonal_ArrayInt.ToList().All(x => x == ID_Int))
             {
 
                 winner_int = ID_Int;
@@ -382,7 +369,7 @@ class Game
             for (int index_Int = 0; index_Int < 3; index_Int++)
             {
 
-                if(GameBoard.GameBoardStatus_Function().Row(index_Int).ToList().All(x => x == ID_Int))
+                if(rows_2DArrayInt[index_Int].Cast<int>().All(x => x == ID_Int))
                 {
 
                     winner_int = ID_Int;
@@ -391,7 +378,7 @@ class Game
 
                 }
 
-                if(GameBoard.GameBoardStatus_Function().Cast<int>().All(x => x == ID_Int))
+                if(columns_2DArrayInt[index_Int].Cast<int>().All(x => x == ID_Int))
                 {
 
                     winner_int = ID_Int;
@@ -405,7 +392,7 @@ class Game
         }
 
 
-        if(winner_int == -1 & GameBoard.GameBoardStatus_Function().Cast<int>().Find(x => x == 0) == null)
+        if(winner_int == -1 & !GameBoard.GameBoardStatus_Function().Cast<int>().Any(x => x == 0))
         {
 
             Console.Clear();

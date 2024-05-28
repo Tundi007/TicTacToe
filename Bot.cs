@@ -39,26 +39,16 @@ class Bot
 
                 botMaxPieces_Int[elementColumn_Int][1] = elementRow_Int;
 
-                if(GameBoard.ElementValidColumn_Function(GameBoard.GameBoardStatus_Function(), elementColumn_Int, elementRow_Int))
+                if(GameBoard.GameBoardStatus_Function()[elementRow_Int,elementColumn_Int] == 0)
                 {
 
                     playerMaxPieces_Int[elementColumn_Int] = -100;
 
-                    int[,] botBoard_2dArrayInt = new int[3,3];
+                    int[,] botBoard_2dArrayInt = GameBoard.GameBoardStatus_Function();
 
-                    int[] elementVector_FloatVector = new int[3];
-
-                    // botBoard_2dArrayInt
-                    // .Column(elementColumn_Int).CopyTo(elementVector_FloatVector)
-                        ;
-
-                    elementVector_FloatVector[elementRow_Int] = botID_Int;
-
-                    // botBoard_2dArrayInt
-                    // .SetColumn(elementColumn_Int,elementVector_FloatVector)
-                    ;
-
-                    int number_Int = 0;
+                    botBoard_2dArrayInt[elementRow_Int,elementColumn_Int] = botID_Int;
+                    
+                    int number_Int;
 
                     if(upgradedBot_Bool)
                         number_Int = UpgradedMax_Function(botBoard_2dArrayInt, botID_Int);
@@ -90,12 +80,12 @@ class Bot
                         for (int playerRow_Int = 0; playerRow_Int < 3; playerRow_Int++)
                         {
 
-                            if(GameBoard.ElementValidColumn_Function(botBoard_2dArrayInt, playerColumn_Int, playerRow_Int))
+                            if(botBoard_2dArrayInt[playerRow_Int,playerColumn_Int] == 0)
                             {
 
-                                int min_Int = 0;
+                                int min_Int;
 
-                                int[,] playerBoard_2dArrayInt =new int[3,3];
+                                int[,] playerBoard_2dArrayInt = botBoard_2dArrayInt;
 
                                 playerBoard_2dArrayInt[playerRow_Int,playerColumn_Int] = playerID_Int;
 
@@ -119,18 +109,18 @@ class Bot
                         
                     }
 
-                }
+                    if(clumsyBot_Bool)
+                    {
 
-                if(clumsyBot_Bool)
-                {
+                        playerMaxPieces_Int[elementColumn_Int] += RandomNumberGenerator.GetInt32(99,101);
 
-                    playerMaxPieces_Int[elementColumn_Int] += RandomNumberGenerator.GetInt32(99,101);
+                        playerMaxPieces_Int[elementColumn_Int] *= RandomNumberGenerator.GetInt32(2,5);
 
-                    playerMaxPieces_Int[elementColumn_Int] *= RandomNumberGenerator.GetInt32(2,5);
+                        botMaxPieces_Int[elementColumn_Int][0] += RandomNumberGenerator.GetInt32(99,101);
 
-                    botMaxPieces_Int[elementColumn_Int][0] += RandomNumberGenerator.GetInt32(99,101);
+                        botMaxPieces_Int[elementColumn_Int][0] *= RandomNumberGenerator.GetInt32(2,5);
 
-                    botMaxPieces_Int[elementColumn_Int][0] *= RandomNumberGenerator.GetInt32(2,5);
+                    }
 
                 }
 
@@ -163,43 +153,46 @@ class Bot
 
         int highestCount_Int = 0;
 
+        (int[][]rows_2DArrayInt,
+            int[][]columns_2DArrayInt,
+                int[]diagonal_ArrayInt,
+                    int[]reverseDiagonal_ArrayInt) =
+                        GameBoard.VectorGenerator_Function(max_2dArrayInt);
+
         if(upgradedBot_Bool){
 
-            int[,] mirror_2DArrayInt;
+            highestCount_Int =
+                UpgradedVectorElementCount_Function(
+                    diagonal_ArrayInt,
+                        ID_Int);
 
-            for (int i = 0; i < 3; i++)
-            {
+            int mirroredDiagonal_Int = 
+                UpgradedVectorElementCount_Function(
+                    reverseDiagonal_ArrayInt,
+                        ID_Int);
 
-                // mirror_2DArrayInt[2-i,i] = 1;
-                
-            }
-
-            highestCount_Int = UpgradedVectorElementCount_Function([]
-                // max_2dArrayInt.Diagonal()
-                , ID_Int);
-
-            int mirroredDiagonal_Int =UpgradedVectorElementCount_Function([]
-                // max_2dArrayInt.Multiply(mirror_2DArrayInt).Diagonal()
-                , ID_Int);
-
-            if (highestCount_Int < mirroredDiagonal_Int)
+            if(highestCount_Int < mirroredDiagonal_Int)
                 highestCount_Int = mirroredDiagonal_Int;
             
         }
 
-        for (int index_Int = 0; index_Int < 3; index_Int++)
-        {
+        for(int index_Int = 0; index_Int < 3; index_Int++)
+        {   
 
-            int countRow_Int = 0;
-            // VectorElementCount_Function(max_2dArrayInt.Row(index_Int), ID_Int);
+            int countRow_Int =
+                VectorElementCount_Function(
+                    rows_2DArrayInt[index_Int],
+                        ID_Int);
 
-            if (highestCount_Int < countRow_Int)
+            if(highestCount_Int < countRow_Int)
                 highestCount_Int = countRow_Int;
 
-            int countColumn_Int = 0;
-            // VectorElementCount_Function(max_2dArrayInt.Column(index_Int), ID_Int);
+            int countColumn_Int =
+                VectorElementCount_Function(
+                    columns_2DArrayInt[index_Int],
+                        ID_Int);
 
-            if (highestCount_Int < countColumn_Int)
+            if(highestCount_Int < countColumn_Int)
                 highestCount_Int = countColumn_Int;
 
         }
@@ -213,24 +206,21 @@ class Bot
 
         int highestCount_Int = 0;
 
-        int[,] copy_2dArrayInt;
+        (int[][]rows_2DArrayInt,
+            int[][]columns_2DArrayInt,
+                int[]diagonal_ArrayInt,
+                    int[]reverseDiagonal_ArrayInt) =
+                        GameBoard.VectorGenerator_Function(max_2dArrayInt);
 
-        int[,] mirror_2DArrayInt;
+        int diagonal_int =
+            UpgradedVectorElementCount_Function(
+                diagonal_ArrayInt,
+                    ID_Int);
 
-        for (int i = 0; i < 3; i++)
-        {
-
-            // mirror_2DArrayInt[2-i,i] = 1;
-            
-        }
-
-        int diagonal_int = UpgradedVectorElementCount_Function([]
-            // copy_2dArrayInt.Diagonal()
-            , ID_Int);
-
-        int mirroredDiagonal_Int = UpgradedVectorElementCount_Function([]
-            // copy_2dArrayInt.Multiply(mirror_2DArrayInt).Diagonal()
-            , ID_Int);
+        int mirroredDiagonal_Int = 
+            UpgradedVectorElementCount_Function(
+                reverseDiagonal_ArrayInt,
+                    ID_Int);
 
         if(highestCount_Int < mirroredDiagonal_Int)
             highestCount_Int = mirroredDiagonal_Int;
@@ -241,16 +231,18 @@ class Bot
         for (int index_Int = 0; index_Int < 3; index_Int++)
         {
 
-            int countRow_Int = UpgradedVectorElementCount_Function([]
-                // copy_2dArrayInt.Row(index_Int)
-                , ID_Int);
+            int countRow_Int = 
+                UpgradedVectorElementCount_Function(
+                    rows_2DArrayInt[index_Int],
+                        ID_Int);
 
             if (highestCount_Int < countRow_Int)
                 highestCount_Int = countRow_Int;
 
-            int countColumn_Int = UpgradedVectorElementCount_Function([]
-                // copy_2dArrayInt.Column(index_Int)
-                , ID_Int);
+            int countColumn_Int =
+                UpgradedVectorElementCount_Function(
+                    columns_2DArrayInt[index_Int],
+                        ID_Int);
 
             if (highestCount_Int < countColumn_Int)
                 highestCount_Int = countColumn_Int;

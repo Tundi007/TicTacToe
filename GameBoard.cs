@@ -35,28 +35,39 @@ class GameBoard
     
     }
 
-    public static bool ElementValidColumn_Function(int[,]matrix_2DArrayInt, int row_Int,int column_Int)
+    public static (int[][],int[][],int[],int[]) VectorGenerator_Function(int[,] matrix_2DArrayInt)
     {
+        int[][] rows_ArrayInt = new int[3][];
 
-        if(matrix_2DArrayInt[row_Int,column_Int] == 0)
-            return true;
+        int[][] columns_ArrayInt = new int[3][];
 
-        return false;
-    
-    }
+        int[] diagonal_ArrayInt = new int[3];
 
-    public static (int[],int[]) _Function()
-    {
+        int[] reverseDiagonal_ArrayInt = new int[3];
 
-        int[] columns_ArrayInt = new int[3];
+        for (int index_Int = 0; index_Int < 3; index_Int++)
+        {
 
-        int[] rows_ArrayInt = new int[3];
+            rows_ArrayInt[index_Int] = new int[3];
 
-        
+            columns_ArrayInt[index_Int] = new int[3];
 
+            for (int index2_int = 0; index2_int < 3; index2_int++)
+            {
 
-        
-        return(rows_ArrayInt,columns_ArrayInt);
+                rows_ArrayInt[index_Int][index2_int] = matrix_2DArrayInt[index_Int,index2_int];
+
+                columns_ArrayInt[index_Int][index2_int] = matrix_2DArrayInt[index2_int,index_Int];
+                
+            }
+
+            diagonal_ArrayInt[index_Int] = matrix_2DArrayInt[index_Int,index_Int];
+
+            reverseDiagonal_ArrayInt[index_Int] = matrix_2DArrayInt[index_Int,2-index_Int];
+            
+        }
+
+        return(rows_ArrayInt,columns_ArrayInt,diagonal_ArrayInt,reverseDiagonal_ArrayInt);
     
     }
 
