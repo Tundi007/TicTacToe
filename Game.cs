@@ -221,7 +221,7 @@ class Game
     {
 
         GameBoard.GameBoardReset_Function();
-    
+
         error_String = "";
 
         if(singlePlayer_Bool)
@@ -231,9 +231,9 @@ class Game
                 if(botFirst_Bool)
                 {
 
-                    (int column_Int ,int row_int)= Bot.Bot_Function();
-                
-                    Action_Function(column_Int, row_int, player2_Int);
+                    (int row_int ,int column_Int) = Bot.Bot_Function();
+            
+                    GameBoard.ElementPlace_Function(row_int, column_Int, player2_Int);
 
                 }
                 else if(!PlayerTurn_Function(player1_Int))
@@ -251,9 +251,9 @@ class Game
                 }else
                 {
 
-                    (int column_Int ,int row_int)= Bot.Bot_Function();
-                
-                    Action_Function(column_Int, row_int, player2_Int);
+                    (int row_int ,int column_Int) = Bot.Bot_Function();
+            
+                    GameBoard.ElementPlace_Function(row_int, column_Int, player2_Int);
                     
                 }
 
@@ -287,7 +287,7 @@ class Game
         while (true)
         {
                 
-            (int elementColumn_Int, int elementRow_Int) = MyUI.GameInterface_Function(error_String, GameBoard.GameBoardStatus_Function(), player_Int, lastColumn_Int, lastRow_Int,botInfo_String);
+            (int elementColumn_Int, int elementRow_Int) = MyUI.GameInterface_Function(error_String, GameBoard.GameBoardStatus_Function(), player_Int, botInfo_String);
 
             error_String = "";
 
@@ -309,25 +309,17 @@ class Game
                 lastColumn_Int = elementColumn_Int - 10;
                 
             }
-            else if(Action_Function(elementColumn_Int, elementColumn_Int, elementRow_Int))                
-                return true;
             else
-                error_String = $"Can't Place There (Column: {elementColumn_Int + 1})";
+            {
+            
+                GameBoard.ElementPlace_Function(elementRow_Int, elementColumn_Int, player_Int);
+
+                return true;
+                
+            }
+
         }
 
-    }
-
-    private static bool Action_Function(int elementColumn_Int, int elementRow_Int, int ID_Int)
-    {
-        
-        if(GameBoard.GameBoardStatus_Function()
-            [elementRow_Int,
-                elementColumn_Int] == 0)
-            if(GameBoard.ElementPlace_Function(elementRow_Int, elementColumn_Int, ID_Int))
-                return true;
-
-        return false;
-    
     }
     
     private static bool CheckGoal_Function()

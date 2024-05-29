@@ -9,6 +9,17 @@ class GameBoard
     {
     
         gameBoard_2DArrayInt = new int[3,3];
+
+        for (int index_Int = 0; index_Int < 3; index_Int++)
+        {
+
+            gameBoard_2DArrayInt[index_Int,0] = 0;
+
+            gameBoard_2DArrayInt[index_Int,1] = 0;
+
+            gameBoard_2DArrayInt[index_Int,2] = 0;
+            
+        }
     
     }
 
@@ -19,19 +30,29 @@ class GameBoard
     
     }
 
-    public static bool ElementPlace_Function(int elementRow_Int,int elementColumn_Int, int elementValue_Int)
+    public static void CopyGameBoard_Function(int[,] board_2DArrayInt, out int[,] boardCopy_2DArray)
     {
-        
-        if(elementRow_Int < 5 & elementRow_Int > -1 & elementColumn_Int < 5 & elementColumn_Int > -1)
+
+        boardCopy_2DArray = new int[3,3];
+
+        for (int i = 0; i < 3; i++)
         {
 
-            gameBoard_2DArrayInt[elementRow_Int,elementColumn_Int] = elementValue_Int;
+            for (int j = 0; j < 3; j++)
+            {
 
-            return true;
+                boardCopy_2DArray[i,j] = board_2DArrayInt[3,3];
+                
+            }            
 
         }
+    
+    }
 
-        return false;
+    public static void ElementPlace_Function(int elementRow_Int,int elementColumn_Int, int elementValue_Int)
+    {
+
+        gameBoard_2DArrayInt[elementRow_Int,elementColumn_Int] = elementValue_Int;
     
     }
 

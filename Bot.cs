@@ -27,6 +27,8 @@ class Bot
 
         int[] playerMaxPieces_Int = new int[3];
 
+        int[,] board_2DArrayInt = GameBoard.GameBoardStatus_Function();
+
         for (int elementColumn_Int = 0; elementColumn_Int < 3; elementColumn_Int++)
         {
 
@@ -39,12 +41,12 @@ class Bot
 
                 botMaxPieces_Int[elementColumn_Int][1] = elementRow_Int;
 
-                if(GameBoard.GameBoardStatus_Function()[elementRow_Int,elementColumn_Int] == 0)
+                if(board_2DArrayInt[elementRow_Int,elementColumn_Int] == 0)
                 {
 
                     playerMaxPieces_Int[elementColumn_Int] = -100;
 
-                    int[,] botBoard_2dArrayInt = GameBoard.GameBoardStatus_Function();
+                    GameBoard.CopyGameBoard_Function(board_2DArrayInt,out int[,] botBoard_2dArrayInt);
 
                     botBoard_2dArrayInt[elementRow_Int,elementColumn_Int] = botID_Int;
                     
@@ -85,7 +87,7 @@ class Bot
 
                                 int min_Int;
 
-                                int[,] playerBoard_2dArrayInt = botBoard_2dArrayInt;
+                                GameBoard.CopyGameBoard_Function(botBoard_2dArrayInt,out int[,] playerBoard_2dArrayInt);
 
                                 playerBoard_2dArrayInt[playerRow_Int,playerColumn_Int] = playerID_Int;
 
@@ -144,7 +146,7 @@ class Bot
 
         }
 
-        return (bestColumnMove_Int ,bestRowMove_Int);
+        return (bestRowMove_Int ,bestColumnMove_Int);
     
     }
 

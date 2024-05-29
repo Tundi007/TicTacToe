@@ -50,60 +50,24 @@ class MyUI
 
     }
 
-    public static (int,int) GameInterface_Function(string error_String, int[,] gameBoard_SingleMatrix,int player_Int, int lastColumn_Int, int lastRow_Int, string botInfo_String)
+    public static (int,int) GameInterface_Function(string error_String, int[,] gameBoard_SingleMatrix,int player_Int, string botInfo_String)
     {
 
-        return KeyMenu_Function(error_String, gameBoard_SingleMatrix, player_Int, lastColumn_Int , lastRow_Int, botInfo_String);
+        return KeyMenu_Function(error_String, gameBoard_SingleMatrix, player_Int, botInfo_String);
 
     }
 
-    private static (int,int) KeyMenu_Function(string error_String, int[,] menuItems_ArrayString2D, int player_Int, int lastColumn_Int, int lastRow_Int,string botInfo_String)
+    private static (int,int) KeyMenu_Function(string error_String, int[,] menuItems_ArrayString2D, int player_Int, string botInfo_String)
     {
-
-        List<int>[] available_ListInt = new List<int>[3];
 
         int menuPointerColumn_Int = 0;
         
         int menuPointerRow_Int = 0;
 
-        int listColumn_Int = 0;
-        
-        int listRow_Int = 0;
-
         string player_string = "O";
 
         if(player_Int == 2)
             player_string = "X";
-
-            for (int row_int = 0; row_int < 3; row_int++)
-            {
-
-                for (int column_Int = 0; column_Int < 3; column_Int++)
-                {
-
-                    if (menuItems_ArrayString2D[row_int, column_Int] == 0)
-                        available_ListInt[row_int].Add(column_Int);
-                                        
-                }
-                
-            }
-
-        for (int index_Int = 0; index_Int < 3; index_Int++)
-        {
-
-            if(available_ListInt[index_Int].Count != 0)
-            {
-
-                (menuPointerRow_Int, menuPointerColumn_Int) =
-                    (0,available_ListInt[index_Int].ElementAt(0));
-
-                listRow_Int = menuPointerRow_Int;
-
-                break;
-
-            }
-
-        }
 
         string hint_String =
             $"Player{player_Int}'s Turn ({player_string})\nUse Arrow Keys To Navigate, \"Enter\" To Select, \"Escape\": Main Menu ())";
@@ -129,7 +93,13 @@ class MyUI
             {
 
                 case ConsoleKey.Enter:
-                    return (menuPointerColumn_Int,menuPointerRow_Int);
+                {
+                    if(menuItems_ArrayString2D[menuPointerRow_Int,menuPointerColumn_Int] == 0)
+                        return (menuPointerRow_Int,menuPointerColumn_Int);
+                    else
+                        error_String = "Please Select An Empty Space!";
+                    
+                }break;
 
                 case ConsoleKey.A:
                     return (10 + menuPointerColumn_Int, menuPointerRow_Int);
@@ -163,56 +133,36 @@ class MyUI
                 case ConsoleKey.LeftArrow:
                 {                    
 
-                    if(listColumn_Int < 1) break;
+                    if(menuPointerColumn_Int < 1) break;
 
-                    menuPointerColumn_Int = available_ListInt[listRow_Int].ElementAt(listColumn_Int--);
+                    menuPointerColumn_Int--;
 
                 }break;
 
                 case ConsoleKey.RightArrow:
                 {
 
-                    if (listColumn_Int >= available_ListInt[listRow_Int].Count-1) break;
+                    if (menuPointerColumn_Int > 1) break;
 
-                    menuPointerColumn_Int = available_ListInt[listRow_Int].ElementAt(listColumn_Int++);
+                    menuPointerColumn_Int++;
 
                 }break;
 
                 case ConsoleKey.UpArrow:
                 {
 
-                    if(listRow_Int < 1) break;
-
-                    if(available_ListInt[listRow_Int-1].Count == 0)
-                        if(listRow_Int == 0) break;
-                        else
-                        if(available_ListInt[listRow_Int-2].Count == 0) break;
-                        else
-                            listRow_Int = 0;
-
-                    if(available_ListInt[listRow_Int-1].Count - 1 < listColumn_Int)
-                        listColumn_Int = available_ListInt[listRow_Int-1].Count - 1;
+                    if(menuPointerRow_Int < 1) break;
  
-                    menuPointerColumn_Int = available_ListInt[listRow_Int--].ElementAt(listColumn_Int);
+                    menuPointerRow_Int--;
 
                 }break;
 
                 case ConsoleKey.DownArrow:
                 {
 
-                    if (menuPointerRow_Int >= 2) break;
-
-                    if(available_ListInt[listRow_Int+1].Count == 0)
-                        if(listRow_Int == 2) break;
-                        else
-                        if(available_ListInt[listRow_Int+2].Count == 0) break;
-                        else
-                            listRow_Int = 2;
-
-                    if(available_ListInt[listRow_Int].Count - 1 < listColumn_Int)
-                        listColumn_Int = available_ListInt[listRow_Int-1].Count - 1;
+                    if (menuPointerRow_Int > 1) break;
  
-                    menuPointerColumn_Int = available_ListInt[listRow_Int++].ElementAt(listColumn_Int);
+                    menuPointerRow_Int++;
 
                 }break;
 
