@@ -1,95 +1,73 @@
+using System.Collections.ObjectModel;
+
 namespace Connect4;
 
 class GameBoard
 {
+    private static int[,]gameBoard_2DArrayInt = new int[3,3];
 
-    private static int[,] gameBoard_2DArrayInt = new int[3,3];
-
+    /// Resets the game board for a new match.
     public static void GameBoardReset_Function()
     {
-    
+        // Create a new game board with all elements set to zero
         gameBoard_2DArrayInt = new int[3,3];
-
-        for (int index_Int = 0; index_Int < 3; index_Int++)
-        {
-
-            gameBoard_2DArrayInt[index_Int,0] = 0;
-
-            gameBoard_2DArrayInt[index_Int,1] = 0;
-
-            gameBoard_2DArrayInt[index_Int,2] = 0;
-            
-        }
-    
     }
 
+    /// Returns the current state of the game board.
     public static int[,] GameBoardStatus_Function()
     {
-    
+        // Returns the current state of the game board.
+        // The value of each element represents the ID of the player who made the move.
+        // The ID of the player is 0 for no player, 1 for the first player, 2 for the second player.
+
         return gameBoard_2DArrayInt;
-    
     }
 
-    public static void CopyGameBoard_Function(int[,] board_2DArrayInt, out int[,] boardCopy_2DArray)
+    /// A sub-status is a 1D array that represents either a row, column, diagonal, reverse diagonal or all of the elements of the game board.
+    public static int[] GameBoardSubStatus_Function(int[,] targetBoard_2DArrayInt, int sub_Int, int index_int)
     {
+        // If the targetBoard_2DArrayInt argument is null, use the current game board.
+        if (targetBoard_2DArrayInt.Length == 1)
+            targetBoard_2DArrayInt = gameBoard_2DArrayInt.Clone() as int[,];
 
-        boardCopy_2DArray = new int[3,3];
-
-        for (int i = 0; i < 3; i++)
+        // Return the sub-status based on the type of sub-status.
+        return sub_Int switch
         {
-
-            for (int j = 0; j < 3; j++)
-            {
-
-                boardCopy_2DArray[i,j] = board_2DArrayInt[3,3];
-                
-            }            
-
-        }
-    
+            // Row sub-status
+            0 => [targetBoard_2DArrayInt[index_int, 0], targetBoard_2DArrayInt[index_int, 1], targetBoard_2DArrayInt[index_int, 2]],
+            // Column sub-status
+            1 => [targetBoard_2DArrayInt[0, index_int], targetBoard_2DArrayInt[1, index_int], targetBoard_2DArrayInt[2, index_int]],
+            // Diagonal sub-status
+            2 => [targetBoard_2DArrayInt[0, 0], targetBoard_2DArrayInt[1, 1], targetBoard_2DArrayInt[2, 2]],
+            // Other diagonal sub-status
+            3 => [targetBoard_2DArrayInt[0, 2], targetBoard_2DArrayInt[1, 1], targetBoard_2DArrayInt[2, 0]],
+            // Entire board sub-status
+            4 => [
+                                targetBoard_2DArrayInt[0,0], targetBoard_2DArrayInt[0,1], targetBoard_2DArrayInt[0,2],
+                    targetBoard_2DArrayInt[1,0], targetBoard_2DArrayInt[1,1], targetBoard_2DArrayInt[1,2],
+                    targetBoard_2DArrayInt[2,0], targetBoard_2DArrayInt[2,1], targetBoard_2DArrayInt[2,2]
+                            ],
+            _ => new int[3],
+        };
     }
 
-    public static void ElementPlace_Function(int elementRow_Int,int elementColumn_Int, int elementValue_Int)
+    /// Places an element on the game board.
+    public static bool ElementPlace_Function(int row_Int, int column_Int, int playerID_Int)
     {
-
-        gameBoard_2DArrayInt[elementRow_Int,elementColumn_Int] = elementValue_Int;
-    
-    }
-
-    public static (int[][],int[][],int[],int[]) VectorGenerator_Function(int[,] matrix_2DArrayInt)
-    {
-        int[][] rows_ArrayInt = new int[3][];
-
-        int[][] columns_ArrayInt = new int[3][];
-
-        int[] diagonal_ArrayInt = new int[3];
-
-        int[] reverseDiagonal_ArrayInt = new int[3];
-
-        for (int index_Int = 0; index_Int < 3; index_Int++)
+        // Check if the position is out of bounds or already occupied
+        if (row_Int > 2 || row_Int < 0 || column_Int > 2 || column_Int < 0 || gameBoard_2DArrayInt[row_Int, column_Int] != 0)
         {
+            System.Console.WriteLine("Cant put there");
 
-            rows_ArrayInt[index_Int] = new int[3];
+            Console.ReadKey();
 
-            columns_ArrayInt[index_Int] = new int[3];
-
-            for (int index2_int = 0; index2_int < 3; index2_int++)
-            {
-
-                rows_ArrayInt[index_Int][index2_int] = matrix_2DArrayInt[index_Int,index2_int];
-
-                columns_ArrayInt[index_Int][index2_int] = matrix_2DArrayInt[index2_int,index_Int];
-                
-            }
-
-            diagonal_ArrayInt[index_Int] = matrix_2DArrayInt[index_Int,index_Int];
-
-            reverseDiagonal_ArrayInt[index_Int] = matrix_2DArrayInt[index_Int,2-index_Int];
-            
+            return false;
         }
 
-        return(rows_ArrayInt,columns_ArrayInt,diagonal_ArrayInt,reverseDiagonal_ArrayInt);
-    
+        // Place the element on the game board
+        gameBoard_2DArrayInt[row_Int, column_Int] = playerID_Int;
+
+        return true;
     }
 
 }

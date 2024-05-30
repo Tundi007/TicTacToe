@@ -1,449 +1,236 @@
-using System.Security.Cryptography;
 namespace Connect4;
 
 class Bot
 {
 
-    private static bool upgradedBot_Bool = false;
+    private static bool alphaBeta_Bool = false;
 
-    private static bool clumsyBot_Bool = false;
+    private static int playerID_Int;
+    
+    private static int botID_Int;
 
-    private static bool visibleAlgorithm_Bool = false;
+    private static bool miniMaxShow_Bool = false;
 
-    private static int playerID_Int = 1;
-
-    private static int botID_Int = 2;
-
-    public static (int,int) Bot_Function()
+    /// Returns the coordinates of the best move for the bot to make.
+    public static (int, int) Bot_Function()
     {
+        // Initialize variables
+        int selectedRow_Int = -1;
+        int selectedColumn_Int = -1;
+        int[,] gameBoard_2DArrayInt = GameBoard.GameBoardStatus_Function().Clone()as int[,];
+        int[,] scoreBoard_2DArrayInt = {{-10000, -10000, -10000}, {-10000, -10000, -10000}, {-10000, -10000, -10000}};
+        int maxScore_Int = -10000;
+        bool alphaBetaPruning_Bool = false;
 
-        int bestCost_Int = -10000;
-
-        int bestColumnMove_Int = -1;
-
-        int bestRowMove_Int = -1;
-
-        List<int[]> botMaxPieces_Int = [];
-
-        int[] playerMaxPieces_Int = new int[3];
-
-        int[,] board_2DArrayInt = GameBoard.GameBoardStatus_Function();
-
-        for (int elementColumn_Int = 0; elementColumn_Int < 3; elementColumn_Int++)
+        // Iterate over the board for bot's turn
+        for (int botRow_Int = 0; botRow_Int < 3; botRow_Int++)
         {
-
-            botMaxPieces_Int.Add(new int[2]);
-
-            for (int elementRow_Int = 0; elementRow_Int < 3; elementRow_Int++)
+            for (int botColumn_Int = 0; botColumn_Int < 3; botColumn_Int++)
             {
+                int minScore_Int = 10000;
 
-                botMaxPieces_Int[elementColumn_Int][0] = -100;
-
-                botMaxPieces_Int[elementColumn_Int][1] = elementRow_Int;
-
-                if(board_2DArrayInt[elementRow_Int,elementColumn_Int] == 0)
+                // Check if the current position is empty
+                if(gameBoard_2DArrayInt[botRow_Int,botColumn_Int] == 0)
                 {
+                    int[,] botBoard_2DArrayInt = gameBoard_2DArrayInt.Clone()as int[,];
+                    botBoard_2DArrayInt[botRow_Int,botColumn_Int] = botID_Int;
 
-                    playerMaxPieces_Int[elementColumn_Int] = -100;
-
-                    GameBoard.CopyGameBoard_Function(board_2DArrayInt,out int[,] botBoard_2dArrayInt);
-
-                    botBoard_2dArrayInt[elementRow_Int,elementColumn_Int] = botID_Int;
-                    
-                    int number_Int;
-
-                    if(upgradedBot_Bool)
-                        number_Int = UpgradedMax_Function(botBoard_2dArrayInt, botID_Int);
-                    else
-                        number_Int = Max_Function(botBoard_2dArrayInt, botID_Int);
-
-                    if(botMaxPieces_Int[elementColumn_Int][0] < number_Int)
+                    // Iterate over the board for player's turn
+                    for (int playerRow_Int = 0; playerRow_Int < 3; playerRow_Int++)
                     {
-
-                        botMaxPieces_Int[elementColumn_Int][0] = number_Int;
-                        
-                        botMaxPieces_Int[elementColumn_Int][1] = elementRow_Int;
-                    
-                    }
-                
-                    if(botMaxPieces_Int[elementColumn_Int][0] == 100)
-                    {
-
-                        ShowSteps(botBoard_2dArrayInt,100,0,elementColumn_Int, elementRow_Int);
-                    
-                        return (elementColumn_Int,elementRow_Int);
-                        
-                    }
-
-
-                    for (int playerColumn_Int = 0; playerColumn_Int < 3; playerColumn_Int++)
-                    {
-
-                        for (int playerRow_Int = 0; playerRow_Int < 3; playerRow_Int++)
+                        for (int playerColumn_Int = 0; playerColumn_Int < 3; playerColumn_Int++)
                         {
-
-                            if(botBoard_2dArrayInt[playerRow_Int,playerColumn_Int] == 0)
+                            int[,] playerBoard_2DArrayInt = botBoard_2DArrayInt.Clone()as int[,];
+                            if(playerBoard_2DArrayInt[playerRow_Int,playerColumn_Int] == 0)
                             {
+                                playerBoard_2DArrayInt[playerRow_Int,playerColumn_Int] = playerID_Int;
+                                int score_Int = Score_Function(playerBoard_2DArrayInt);
 
-                                int min_Int;
+                                if(score_Int == 100)
+                                    return (botRow_Int,botColumn_Int);
 
-                                GameBoard.CopyGameBoard_Function(botBoard_2dArrayInt,out int[,] playerBoard_2dArrayInt);
+                                if(score_Int < minScore_Int)
+                                    minScore_Int = score_Int;
 
-                                playerBoard_2dArrayInt[playerRow_Int,playerColumn_Int] = playerID_Int;
+                                if(alphaBeta_Bool & minScore_Int <= maxScore_Int)
+                                    alphaBetaPruning_Bool = true;
 
-                                if(upgradedBot_Bool)
-                                    min_Int = UpgradedMax_Function(playerBoard_2dArrayInt, playerID_Int);
-                                else
-                                    min_Int = Max_Function(playerBoard_2dArrayInt, playerID_Int);
-
-                                if(min_Int == 100)
-                                    min_Int = 50;
-
-                                if(playerMaxPieces_Int[elementColumn_Int] < min_Int)
-                                    playerMaxPieces_Int[elementColumn_Int] = min_Int;
-
-                                if(visibleAlgorithm_Bool)
-                                    ShowSteps(playerBoard_2dArrayInt,botMaxPieces_Int[elementColumn_Int][0],min_Int,-1,-1);
-
+                                if(miniMaxShow_Bool)
+                                {
+                                    Console.Clear();
+                                    System.Console.WriteLine($"[{botRow_Int},{botColumn_Int}]");
+                                    MyUI.ShowMenu_Function(playerBoard_2DArrayInt,-1,-1);
+                                    System.Console.WriteLine("score: " + score_Int + " | MinScore: " + minScore_Int + " | MaxScore: " + maxScore_Int);
+                                    Console.ReadKey();
+                                }
                             }
 
+                            if(alphaBetaPruning_Bool)
+                                break;
                         }
-                        
+
+                        if(alphaBetaPruning_Bool)
+                            break;
                     }
 
-                    if(clumsyBot_Bool)
+                    if(!alphaBetaPruning_Bool)
+                        scoreBoard_2DArrayInt[botRow_Int,botColumn_Int] = minScore_Int;
+                    else
+                        alphaBetaPruning_Bool = false;
+
+                    if(maxScore_Int < minScore_Int)
+                        maxScore_Int = minScore_Int;
+
+                    if(miniMaxShow_Bool)
                     {
-
-                        playerMaxPieces_Int[elementColumn_Int] += RandomNumberGenerator.GetInt32(99,101);
-
-                        playerMaxPieces_Int[elementColumn_Int] *= RandomNumberGenerator.GetInt32(2,5);
-
-                        botMaxPieces_Int[elementColumn_Int][0] += RandomNumberGenerator.GetInt32(99,101);
-
-                        botMaxPieces_Int[elementColumn_Int][0] *= RandomNumberGenerator.GetInt32(2,5);
-
+                        Console.Clear();
+                        System.Console.WriteLine("Placement Score Marix: (-10000 = [Not Calculated Yet] or [Impossible Placement] or [Pruned])");
+                        for (int i = 0; i < 3; i++)
+                        {
+                            for (int j = 0; j < 3; j++)
+                            {
+                                System.Console.Write(scoreBoard_2DArrayInt[i,j] + " , ");
+                            }
+                            System.Console.WriteLine();
+                        }
+                        Console.ReadKey();
                     }
-
                 }
-
             }
-
         }
 
-        for (int index_Int = 0; index_Int < 3; index_Int++)
-        {
+        int maximumScore_Int = -10000;
 
-            if(bestCost_Int < botMaxPieces_Int[index_Int][0] - playerMaxPieces_Int[index_Int])
+        // Find the best move
+        for (int row_Int = 0; row_Int < 3; row_Int++)
+        {
+            for (int column_Int = 0; column_Int < 3; column_Int++)
             {
-
-                bestColumnMove_Int = index_Int;
-
-                bestRowMove_Int = botMaxPieces_Int[index_Int][1];
-
-                bestCost_Int = botMaxPieces_Int[index_Int][0] - playerMaxPieces_Int[index_Int];
-                
+                if(scoreBoard_2DArrayInt[row_Int,column_Int] != -10000)
+                    if(scoreBoard_2DArrayInt[row_Int,column_Int] > maximumScore_Int)
+                        (selectedRow_Int,selectedColumn_Int,maximumScore_Int) = (row_Int,column_Int,scoreBoard_2DArrayInt[row_Int,column_Int]);
             }
-
         }
 
-        return (bestRowMove_Int ,bestColumnMove_Int);
-    
-    }
-
-    private static int Max_Function(int[,] max_2dArrayInt, int ID_Int)
-    {
-
-        int highestCount_Int = 0;
-
-        (int[][]rows_2DArrayInt,
-            int[][]columns_2DArrayInt,
-                int[]diagonal_ArrayInt,
-                    int[]reverseDiagonal_ArrayInt) =
-                        GameBoard.VectorGenerator_Function(max_2dArrayInt);
-
-        if(upgradedBot_Bool){
-
-            highestCount_Int =
-                UpgradedVectorElementCount_Function(
-                    diagonal_ArrayInt,
-                        ID_Int);
-
-            int mirroredDiagonal_Int = 
-                UpgradedVectorElementCount_Function(
-                    reverseDiagonal_ArrayInt,
-                        ID_Int);
-
-            if(highestCount_Int < mirroredDiagonal_Int)
-                highestCount_Int = mirroredDiagonal_Int;
-            
+        if(miniMaxShow_Bool){
+            Console.Clear();
+            System.Console.WriteLine("Placement: [" + selectedRow_Int + "," + selectedColumn_Int + "]");
+            Console.ReadKey();
         }
 
-        for(int index_Int = 0; index_Int < 3; index_Int++)
-        {   
-
-            int countRow_Int =
-                VectorElementCount_Function(
-                    rows_2DArrayInt[index_Int],
-                        ID_Int);
-
-            if(highestCount_Int < countRow_Int)
-                highestCount_Int = countRow_Int;
-
-            int countColumn_Int =
-                VectorElementCount_Function(
-                    columns_2DArrayInt[index_Int],
-                        ID_Int);
-
-            if(highestCount_Int < countColumn_Int)
-                highestCount_Int = countColumn_Int;
-
-        }
-
-        return highestCount_Int;
-
-    }
-    
-    private static int UpgradedMax_Function(int[,] max_2dArrayInt, int ID_Int)
-    {
-
-        int highestCount_Int = 0;
-
-        (int[][]rows_2DArrayInt,
-            int[][]columns_2DArrayInt,
-                int[]diagonal_ArrayInt,
-                    int[]reverseDiagonal_ArrayInt) =
-                        GameBoard.VectorGenerator_Function(max_2dArrayInt);
-
-        int diagonal_int =
-            UpgradedVectorElementCount_Function(
-                diagonal_ArrayInt,
-                    ID_Int);
-
-        int mirroredDiagonal_Int = 
-            UpgradedVectorElementCount_Function(
-                reverseDiagonal_ArrayInt,
-                    ID_Int);
-
-        if(highestCount_Int < mirroredDiagonal_Int)
-            highestCount_Int = mirroredDiagonal_Int;
-
-        if(highestCount_Int < diagonal_int)
-            highestCount_Int = diagonal_int;
-
-        for (int index_Int = 0; index_Int < 3; index_Int++)
-        {
-
-            int countRow_Int = 
-                UpgradedVectorElementCount_Function(
-                    rows_2DArrayInt[index_Int],
-                        ID_Int);
-
-            if (highestCount_Int < countRow_Int)
-                highestCount_Int = countRow_Int;
-
-            int countColumn_Int =
-                UpgradedVectorElementCount_Function(
-                    columns_2DArrayInt[index_Int],
-                        ID_Int);
-
-            if (highestCount_Int < countColumn_Int)
-                highestCount_Int = countColumn_Int;
-
-        }            
-
-        return highestCount_Int;
-
+        return(selectedRow_Int,selectedColumn_Int);
     }
 
-    private static int VectorElementCount_Function(int[] array_FloatVector, int elementID_Int)
+    /// Calculates the score of a given game board.
+    private static int Score_Function(int[,] board_ListArrayInt)
     {
+        // Calculate the score of the main diagonal
+        int score_Int = Score_Function([..GameBoard.GameBoardSubStatus_Function(board_ListArrayInt,2,-1)]);
 
-        List<float> list_FloatList = [..array_FloatVector];
+        // Calculate the score of the secondary diagonal
+        int scoreTemp_Int = Score_Function([..GameBoard.GameBoardSubStatus_Function(board_ListArrayInt,3,-1)]);
 
-        int highestCount_Int = 0;
-
-        while(list_FloatList.Count > 1)
-        {
-
-            list_FloatList = list_FloatList.SkipWhile(x => x != elementID_Int).ToList();
-
-            int temp_Int = list_FloatList.TakeWhile(x => x == elementID_Int && x != 0).Count();
-
-            if(temp_Int > highestCount_Int)
-                highestCount_Int = temp_Int;
-
-            list_FloatList = list_FloatList.Skip(temp_Int).ToList();
-
-        }
-
-        return highestCount_Int;
-    
-    }
-    
-    private static int UpgradedVectorElementCount_Function(int[] array_FloatVector, int elementID_Int)
-    {
-
-        List<float> list_FloatList = [..array_FloatVector];
-
-        int highestCount_Int = 0;
-
-        if(list_FloatList.FindAll(x => x != elementID_Int && x != 0).Count > 0)
-            return 0;
-
-        if(list_FloatList.FindAll(x => x == elementID_Int && x != 0).Count == 3)
+        // If either diagonal is a win, return 100
+        if (scoreTemp_Int == 300 || score_Int == 300)
             return 100;
 
-        if(list_FloatList.FindAll(x => x == elementID_Int || x == 0).Count == 3)
+        // Add the scores of the diagonals to the total score
+        score_Int += scoreTemp_Int;
+
+        // Calculate the score of each row and column and add it to the total score
+        for (int index_Int = 0; index_Int < 3; index_Int++)
         {
+            scoreTemp_Int = Score_Function([..GameBoard.GameBoardSubStatus_Function(board_ListArrayInt,0,index_Int)]);
 
-            while(list_FloatList.Count > 1)
-            {
+            // If a row is a win, return 100
+            if (scoreTemp_Int == 300)
+                return 100;
 
-                list_FloatList = list_FloatList.SkipWhile(x => x == 0).ToList();
+            score_Int += scoreTemp_Int;
 
-                int temp1_Int = list_FloatList.TakeWhile(x => x == elementID_Int && x != 0).Count();
+            scoreTemp_Int = Score_Function([..GameBoard.GameBoardSubStatus_Function(board_ListArrayInt,1,index_Int)]);
 
-                if(temp1_Int > highestCount_Int)
-                    highestCount_Int = temp1_Int;
+            // If a column is a win, return 100
+            if (scoreTemp_Int == 300)
+                return 100;
 
-                list_FloatList = list_FloatList.Skip(temp1_Int).ToList();
-
-            }
-
-            return highestCount_Int;
-
-        }else
-            return 0;
-    
-    }
-
-    public static string BotSet_Function(bool difficulty_Bool, bool default_Bool, int bot_Int, int player_Int)
-    {
-
-        string botInfo_String = "Bot: ";
-
-        if((player_Int, bot_Int) == (0 , 0))
-        {
-            
-            if(upgradedBot_Bool)
-                botInfo_String += "[Advanced]";
-            else
-                botInfo_String += "[Normal]";
-
-            if(clumsyBot_Bool)
-                botInfo_String += "[Clumsy]";
-
-            return botInfo_String;
-
+            score_Int += scoreTemp_Int;
         }
 
-        if(default_Bool)
+        return score_Int;
+
+    }
+    
+    /// Calculates the score of a given array based on the number of occurrences of the bot and player IDs.
+    private static int Score_Function(List<int> array_ListInt)
+    {
+        // Initialize highest count to 0
+        int highestCount_Int = 0;
+
+        // Check if the array contains both bot and player IDs
+        if (array_ListInt.Any(element => element == botID_Int) && array_ListInt.Any(element => element == playerID_Int))
+            return 0;
+
+        // Sort the array
+        array_ListInt.Sort();
+
+        // Remove leading zeros from the array
+        array_ListInt = array_ListInt.SkipWhile(element => element == 0).ToList();
+
+        // If array is empty, return 0
+        if (array_ListInt.Count == 0)
+            return 0;
+
+        
+        if (array_ListInt[0] == botID_Int) // If the first element of the array is the bot ID, set highest count to the count of the array
+            highestCount_Int = array_ListInt.Count;        
+        else // If the first element of the array is the player ID, set highest count to the negative count of the array
+        if (array_ListInt[0] == playerID_Int)
+            highestCount_Int = -array_ListInt.Count;
+
+        
+        if (highestCount_Int == 1 || highestCount_Int == -2) // If highest count is 1 or -2, increment or decrement it
+            highestCount_Int += highestCount_Int == 1 ? 1 : -1;
+        else // If highest count is 3 or -3, multiply it by 100 or 10 respectively
+        if (highestCount_Int == 3 || highestCount_Int == -3)
+            highestCount_Int *= highestCount_Int == 3 ? 100 : 10;
+        else if (highestCount_Int == 2)
+            highestCount_Int += 2;
+
+        // Return the highest count
+        return highestCount_Int;
+    }
+
+    /// Initializes the bot based on the provided alphaBetaSet, player ID, and bot ID.
+    public static void BotInitialization_Function(bool alphaBetaSet_Bool, int player_Int, int bot_Int)
+    {
+        // If player ID is -1, toggle miniMaxShow_Bool
+        if (player_Int == -1)
+            miniMaxShow_Bool = !miniMaxShow_Bool;
+        else
         {
-
+            // Set player ID and bot ID
             playerID_Int = player_Int;
-
             botID_Int = bot_Int;
 
-            clumsyBot_Bool = false;
+            // Set alphaBeta_Bool based on alphaBetaSet_Bool
+            alphaBeta_Bool = alphaBetaSet_Bool;
+        }
+
+        string info_String = "";
+
         
-            upgradedBot_Bool = false;
+        if (alphaBetaSet_Bool) // If alphaBetaSet_Bool is true, add "MiniMax: [Pruning]" to info_String
+            info_String += "MiniMax: [Pruning]";
+        else // If alphaBetaSet_Bool is false, add "MiniMax: [Vanilla]" to info_String            
+            info_String += "MiniMax: [Vanilla]";
 
-            botInfo_String += "[Normal]";
-
-            return botInfo_String;
-
-        }
-
-        playerID_Int = player_Int;
-
-        botID_Int = bot_Int;
-
-        if(difficulty_Bool)
-        {
-
-            botInfo_String += "[Advanced]";
-
-            clumsyBot_Bool = false;
+        // If miniMaxShow_Bool is true, add " [Step By Step]" to info_String
+        if (miniMaxShow_Bool)
+            info_String += " [Step By Step]";
         
-            upgradedBot_Bool = true;
-            
-        }
-        else
-        {
-
-            botInfo_String += "[Clumsy]";
-            
-            clumsyBot_Bool = true;
-
-            upgradedBot_Bool = false;
-            
-        }
-
-        return botInfo_String;
-    
-    }
-
-    public static string Visiblity_Function()
-    {
-
-        visibleAlgorithm_Bool = !visibleAlgorithm_Bool;
-
-        string botInfo_String = "Bot: ";
-            
-        if(upgradedBot_Bool)
-            botInfo_String += "[Advanced]";
-        else if(clumsyBot_Bool)
-            botInfo_String += "[Clumsy]";
-        else
-            botInfo_String += "[Normal]";
-
-        if(visibleAlgorithm_Bool)
-            botInfo_String += "[Visible]";
-        else
-            botInfo_String += "[Hidden]";
-
-        return botInfo_String;
-    
-    }
-
-    private static void ShowSteps(int[,] board_2dArrayInt, int botPoints_Int, int playerPoints_Int, int columnNumber_Int, int rowNumber_Int)
-    {
-
-        Console.Clear();
-
-        if(botPoints_Int == 100)
-        {
-
-            for (int i = 0; i < 4; i++)
-            {
-
-                System.Console.Write("\n\n\n\n\n\n\n\n");
-
-                Thread.Sleep(10);
-
-                Console.Clear();
-                        
-                MyUI.ShowMenu_Function(board_2dArrayInt,columnNumber_Int, rowNumber_Int);
-
-                System.Console.WriteLine($"Check Mate!");
-
-                Thread.Sleep(500);
-
-                Console.Clear();                
-                
-            }
-
-            return;
-
-        }
-        
-        MyUI.ShowMenu_Function(board_2dArrayInt,-1,-1);
-
-        System.Console.WriteLine($"You vs Bot: {playerPoints_Int} - {botPoints_Int} [Points]");
-
-        Thread.Sleep(120);
-
-
+        // Call GameInfo_Function with info_String
+        MyUI.GameInfo_Function(info_String);
     }
 
 }

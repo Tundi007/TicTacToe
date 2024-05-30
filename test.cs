@@ -1,31 +1,21 @@
-// int[,] botBoard_2dArrayInt = new int[3,3];
+// // List<int> a =[1,2,0,1];
 
-// int[,]GameBoardStatus_Function = new int[3,3];
+// // a.Sort();
 
-// for (int i = 0; i < 3; i++)
-// {
+// // foreach (int c in a)
+// // {
 
-//     for (int j = 0; j < 3; j++)
-//     {
+// //     System.Console.WriteLine(c + " ");
+    
+// // }
 
-//         GameBoardStatus_Function[i,j] = i+j;
-        
-//     }
+// int a = 0;
 
-// }
+// int b = -1;
 
-// GameBoardStatus_Function.CopyTo(botBoard_2dArrayInt,0);
+// a += a == 1 ? 2 : -1;
+// b +=  b == 1 ? 2 : -1;
 
-// for (int i = 0; i < 3; i++)
-// {
+// System.Console.WriteLine(a);
 
-//     for (int j = 0; j < 3; j++)
-//     {
-
-//         System.Console.Write(botBoard_2dArrayInt[i,j] + " ");
-        
-//     }
-
-//     System.Console.WriteLine();
-
-// }
+// System.Console.WriteLine(b);

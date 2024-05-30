@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace Connect4;
 
 class Game
@@ -13,501 +15,381 @@ class Game
 
     private static bool botFirst_Bool;
 
-    private static bool singlePlayer_Bool;
+    public static bool singlePlayer_Bool;
 
-    public static bool sameRules_Bool = false;
+    private static readonly bool sameRules_Bool = false;
 
-    private static string error_String = "";
-
-    private static string botInfo_String = "";
-
-    public static (int,int) GetTeams_Function()
-    {
-    
-        return(player1_Int,player2_Int);
-    
-    }
-    
-    private static void SideSelect_Function()
-    {
-
-        bool pointer_Bool = false;
-
-        string singlePlayer_String = "";
-
-        if(!singlePlayer_Bool)
-            singlePlayer_String = "First Player, ";
-
-        while(!MyUI.UserInterface_Function($"{singlePlayer_String}Select Your Side (Use Up/Down Arrow Keys, Escape To Exit):", "X", "O", pointer_Bool,out bool valid_Bool, out bool exit_Bool))
-        {
-
-            if(exit_Bool)
-                PrematureExit_Function();
-
-            if(valid_Bool)
-                (player1_Int, player2_Int,pointer_Bool) = (player2_Int, player1_Int,!pointer_Bool);
-
-        }
-
-        pointer_Bool = false;
-
-        while(!MyUI.UserInterface_Function("Who Goes First?:", "You", "Bot", pointer_Bool,out bool valid_Bool, out bool exit_Bool))
-        {
-
-            if(exit_Bool)
-                PrematureExit_Function();
-
-            if(valid_Bool)
-                (botFirst_Bool, pointer_Bool) = (!botFirst_Bool, !pointer_Bool);
-
-        }        
-
-    }
-
-    private static void GameMode_Function()
-    {
-
-        bool pointer_Bool = false;
-
-        while(!MyUI.UserInterface_Function("Select Game Mode (Use Up/Down Arrow Keys, Escape To Exit):", "PvE (Single Player)", "PvP (Couch Play)", pointer_Bool,out bool valid_Bool, out bool exit_Bool))
-        {
-
-            if(exit_Bool)
-                PrematureExit_Function();
-
-            if(valid_Bool)
-                (singlePlayer_Bool, pointer_Bool) = (!singlePlayer_Bool, !pointer_Bool);
-
-        }
-
-        if(singlePlayer_Bool)
-        {
-
-            pointer_Bool = false;
-
-            bool customConfig_Bool = true;
-
-            SideSelect_Function();
-        
-            while(!MyUI.UserInterface_Function("Game Configurations (Use Up/Down Arrow Keys, Escape To Exit):", "AddOn", "Default", pointer_Bool,out bool valid_Bool, out bool exit_Bool))
-            {
-
-                if(exit_Bool)
-                    PrematureExit_Function();
-
-                if(valid_Bool)
-                    (customConfig_Bool, pointer_Bool) = (!customConfig_Bool, !pointer_Bool);
-
-            }
-
-            if(customConfig_Bool)
-                BotAddon_Function(false);
-            else
-                botInfo_String = Bot.BotSet_Function(false, true, player2_Int, player1_Int);
-
-        }
-
-    }
-
-    private static void BotAddon_Function(bool sameBot_Bool)
-    {
-
-        if(sameBot_Bool)
-            return;
-            
-        bool pointer_Bool = false;
-
-        bool botDifficulty_Bool = true;
-
-        while (!MyUI.UserInterface_Function($"Select Bot Configuration:", "Upgraded", "Dumb", pointer_Bool, out bool valid_Bool, out bool exit_Bool))
-        {            
-
-            if (exit_Bool) Game.PrematureExit_Function();
-
-            if(valid_Bool)
-                (botDifficulty_Bool,pointer_Bool) = (!botDifficulty_Bool,!pointer_Bool);
-
-        }
-
-        botInfo_String = Bot.BotSet_Function(botDifficulty_Bool, false, player2_Int, player1_Int);
-    
-    }
-
+    /// Load function is responsible for setting up the game rules and starting the game.
     public static void Load_Function()
     {
-
-        if(!sameRules_Bool)
+        // If the game is not being played with the same rules, reset the game variables.
+        if (!sameRules_Bool)
         {
-            
+            lastRow_Int = 0;
             lastColumn_Int = 0;
-
             player1_Int = 1;
-
             player2_Int = 2;
-
             botFirst_Bool = false;
-
             singlePlayer_Bool = true;
-
-            botInfo_String = "";
-            
         }
 
-        error_String = "";
-
-        if(Program.initialStart_Bool)
+        // If the game is being started for the first time, display a loading screen.
+        if (Program.initialStart_Bool)
         {
-
             string loading_String = "[                    ]";
-
             bool loading_Bool = true;
 
+            // Loop through the loading animation.
             for (int loading_Int = 2; loading_Int < 23; loading_Int++)
-            {            
-
+            {
                 Console.Clear();            
-
                 System.Console.Write("Loading");
-
                 System.Console.Write(loading_String);
 
-                if(loading_Int == 22)System.Console.WriteLine("100%");
-                else System.Console.WriteLine((int)((double)loading_Int/23*100)+"%");
+                if (loading_Int == 22) System.Console.WriteLine("100%");
+                else System.Console.WriteLine((int)((double)loading_Int / 23 * 100) + "%");
 
-                loading_String = loading_String[..(loading_Int-1)] + "-" + loading_String[(loading_Int)..];
+                loading_String = loading_String[..(loading_Int - 1)] + "-" + loading_String[(loading_Int)..];
 
-                if(loading_Int == 4)Thread.Sleep(200);
+                if (loading_Int == 4) Thread.Sleep(200);
 
-                if(loading_Bool)
+                if (loading_Bool)
                 {
-
-                    if(loading_Int%1==0)Thread.Sleep(1);
-
-                    if(loading_Int%3==0)Thread.Sleep(30);
-
-                    if(loading_Int%5==0)Thread.Sleep(100);
-
-                    if(loading_Int%6==0)Thread.Sleep(200);
-
-                    if(loading_Int%7==0)Thread.Sleep(300);
-
-                    if(loading_Int%10==0)
+                    if (loading_Int % 1 == 0) Thread.Sleep(1);
+                    if (loading_Int % 3 == 0) Thread.Sleep(30);
+                    if (loading_Int % 5 == 0) Thread.Sleep(100);
+                    if (loading_Int % 6 == 0) Thread.Sleep(200);
+                    if (loading_Int % 7 == 0) Thread.Sleep(300);
+                    if (loading_Int % 10 == 0)
                     {
-
                         Thread.Sleep(400);
-
                         loading_Bool = false;
-
                     }
-
-                }else Thread.Sleep(5);
-
+                }
+                else Thread.Sleep(5);
             }
 
             Thread.Sleep(200);
-        
         }
 
         Console.Clear();
 
-        if(!sameRules_Bool)
+        // If the game is not being played with the same rules, display the game mode selection menu.
+        if (!sameRules_Bool)
             GameMode_Function();
 
+        // Start the game.
         Game_Function();
-
     }
 
-    private static void Game_Function()
+    /// Function that handles the game mode selection menu.
+    private static void GameMode_Function()
     {
+        // Initialize variables
+        bool pointer_Bool = false;
+        string player1_String = "Player 1";
+        string player2_String = "Player 2";
 
-        GameBoard.GameBoardReset_Function();
-
-        error_String = "";
-
-        if(singlePlayer_Bool)
-            while (true)
-            {
-
-                if(botFirst_Bool)
-                {
-
-                    (int row_int ,int column_Int) = Bot.Bot_Function();
-            
-                    GameBoard.ElementPlace_Function(row_int, column_Int, player2_Int);
-
-                }
-                else if(!PlayerTurn_Function(player1_Int))
-                    break;
-                
-                if(CheckGoal_Function())
-                    break;
-
-                if(botFirst_Bool)
-                {
-
-                    if(!PlayerTurn_Function(player1_Int))
-                        break;
-
-                }else
-                {
-
-                    (int row_int ,int column_Int) = Bot.Bot_Function();
-            
-                    GameBoard.ElementPlace_Function(row_int, column_Int, player2_Int);
-                    
-                }
-
-                if(CheckGoal_Function())
-                    break;
-
-            }
-        else
-            while (true)
-            {
-
-                if(!PlayerTurn_Function(player1_Int))
-                    break;
-                
-                if(CheckGoal_Function())
-                    break;
-
-                if(!PlayerTurn_Function(player2_Int))
-                    break;
-
-                if(CheckGoal_Function())
-                    break;
-
-            }
-    
-    }
-
-    private static bool PlayerTurn_Function(int player_Int)
-    {
-
-        while (true)
+        // Game mode selection loop
+        while (!MyUI.UserInterface_Function("Select Game Mode:", "PvE (Single Player)", "PvP (Couch Play)", pointer_Bool,
+            out bool valid_Bool, out bool exit_Bool))
         {
-                
-            (int elementColumn_Int, int elementRow_Int) = MyUI.GameInterface_Function(error_String, GameBoard.GameBoardStatus_Function(), player_Int, botInfo_String);
-
-            error_String = "";
-
-            lastColumn_Int = elementColumn_Int;
-
-            lastRow_Int = elementRow_Int;
-
-            if(elementColumn_Int == -1)
+            // If exit is triggered, exit the game
+            if (exit_Bool)
                 PrematureExit_Function();
 
-            if(elementColumn_Int == -2)
-                return false;
+            // If valid input is triggered, toggle single player mode
+            if (valid_Bool)
+                (singlePlayer_Bool, pointer_Bool) = (!singlePlayer_Bool, !pointer_Bool);
+        }
 
-            if(elementColumn_Int > 9)
+        // If single player mode is selected, update player names
+        if (singlePlayer_Bool)
+        {
+            player1_String = "You";
+            player2_String = "Bot";
+        }
+
+        // First player selection loop
+        pointer_Bool = false;
+        while (!MyUI.UserInterface_Function("Who Is First?", player1_String, player2_String, pointer_Bool,
+            out bool valid_Bool, out bool exit_Bool))
+        {
+            // If exit is triggered, exit the game
+            if (exit_Bool)
+                PrematureExit_Function();
+
+            // If valid input is triggered, toggle player IDs
+            if (valid_Bool)
+                (player1_Int, player2_Int, pointer_Bool) = (player2_Int, player1_Int, !pointer_Bool);
+        }
+
+        // If single player mode is selected, initialize the bot
+        if (singlePlayer_Bool)
+        {
+            pointer_Bool = false;
+            bool alphaBeta_Bool = true;
+
+            // Bot configuration selection loop
+            while (!MyUI.UserInterface_Function("Minimax Configurations:", "Pruning", "Vanilla", pointer_Bool,
+                out bool valid_Bool, out bool exit_Bool))
             {
+                // If exit is triggered, exit the game
+                if (exit_Bool)
+                    PrematureExit_Function();
 
-                botInfo_String = Bot.Visiblity_Function();
-
-                lastColumn_Int = elementColumn_Int - 10;
-                
+                // If valid input is triggered, toggle bot configurations
+                if (valid_Bool)
+                    (alphaBeta_Bool, pointer_Bool) = (!alphaBeta_Bool, !pointer_Bool);
             }
-            else
+
+            // Initialize the bot
+            Bot.BotInitialization_Function(alphaBeta_Bool, player1_Int, player2_Int);
+        }
+    }
+
+    /// The main game loop that handles the game logic.
+    private static void Game_Function()
+    {
+        // Reset the game board
+        GameBoard.GameBoardReset_Function();
+
+        // If single player mode is selected, start the game loop
+        if (singlePlayer_Bool)
+        {
+            // Game loop for single player mode
+            while (true)
             {
-            
-                GameBoard.ElementPlace_Function(elementRow_Int, elementColumn_Int, player_Int);
+                // If it's the bot's turn, make a move
+                if (botFirst_Bool)
+                {
+                    (int row_int, int column_Int) = Bot.Bot_Function();
 
-                return true;
-                
+                    // Place the bot's element on the game board
+                    if(!GameBoard.ElementPlace_Function(row_int, column_Int, player2_Int))
+                        break;
+                }
+                else // If it's the player's turn, let them make a move
+                    if (!PlayerTurn_Function(player1_Int))
+                        break;
+
+                // Check if the game is over
+                if (CheckGoal_Function())
+                    break;
+
+                // If it's the bot's turn, let them make a move
+                if(botFirst_Bool)
+                {
+                    if (!PlayerTurn_Function(player1_Int))
+                        break;
+                }
+                else // If it's the player's turn, let them make a move
+                {
+                    (int row_int, int column_Int) = Bot.Bot_Function();
+
+                    // Place the bot's element on the game board
+                    if (!GameBoard.ElementPlace_Function(row_int, column_Int, player2_Int))
+                        break;
+                }
+
+                // Check if the game is over
+                if (CheckGoal_Function())
+                    break;
             }
+        }
+        else // If multiplayer mode is selected, start the game loop
+        {
+            // Game loop for multiplayer mode
+            while (true)
+            {
+                // Let the first player make a move
+                if (!PlayerTurn_Function(player1_Int))
+                    break;
 
+                // Check if the game is over
+                if (CheckGoal_Function())
+                    break;
+
+                // Let the second player make a move
+                if (!PlayerTurn_Function(player2_Int))
+                    break;
+
+                // Check if the game is over
+                if (CheckGoal_Function())
+                    break;
+            }
         }
 
     }
-    
+
+    /// Handles the player's turn in the game loop.
+    private static bool PlayerTurn_Function(int playerID_Int)
+    {
+        // Game loop for the player's turn
+        while (true)
+        {
+            // Get the element row and column chosen by the player
+            (int elementRow_Int, int elementColumn_Int) = MyUI.GameInterface_Function(
+                GameBoard.GameBoardStatus_Function(), lastRow_Int, lastColumn_Int, playerID_Int);
+
+            // If the player has chosen a valid element, update the last row and column
+            if (elementColumn_Int > -1)
+            {
+                lastColumn_Int = elementColumn_Int;
+                lastRow_Int = elementRow_Int;
+            }
+
+            // If the player has chosen to exit the game, exit the game
+            if (elementColumn_Int == -2)
+                PrematureExit_Function();
+
+            // If the player has chosen to end the match, end the match
+            if (elementColumn_Int == -1)
+                return false;
+
+            // If the player has chosen to initialize the bot, initialize the bot
+            if (elementColumn_Int == -3)
+                Bot.BotInitialization_Function(false, -1, -1);
+
+            // If the player has chosen a valid location to place their element, place the element and end the player's turn
+            if (GameBoard.ElementPlace_Function(elementRow_Int, elementColumn_Int, playerID_Int))
+                return true;
+            else // If the player has chosen an invalid location, display an error message                
+                System.Console.WriteLine("Invalid Move!");
+
+            // Wait for one second before asking the player for another move
+            Thread.Sleep(1000);
+        }
+    }
+
+    /// Checks if the game is over and returns true if it is.
     private static bool CheckGoal_Function()
     {
-
+        // Initialize variable to store the winner's ID. Default value is -1, which means no winner yet.
         int winner_int = -1;
 
-        (int[][]rows_2DArrayInt,
-            int[][]columns_2DArrayInt,
-                int[]diagonal_ArrayInt,
-                    int[]reverseDiagonal_ArrayInt) =
-                        GameBoard.VectorGenerator_Function(
-                            GameBoard.GameBoardStatus_Function());
-
+        // Loop through all the player IDs (1 and 2)
         for (int ID_Int = 1; ID_Int < 3; ID_Int++)
         {
-
-            if(winner_int == player2_Int | winner_int == player1_Int)
+            // If a winner has already been found, break the loop
+            if (winner_int == player2_Int || winner_int == player1_Int)
                 break;
 
-            if(diagonal_ArrayInt.ToList().All(x => x == ID_Int))
+            // Check if the board is filled with player's ID in reverse diagonal
+            if (GameBoard.GameBoardSubStatus_Function(new int[1,1], 3, -1).All(element => element == ID_Int))
             {
-
                 winner_int = ID_Int;
-
                 break;
-
             }
 
-            if(reverseDiagonal_ArrayInt.ToList().All(x => x == ID_Int))
+            // Check if the board is filled with player's ID in diagonal
+            if (GameBoard.GameBoardSubStatus_Function(new int[1,1], 2, -1).All(element => element == ID_Int))
             {
-
                 winner_int = ID_Int;
-
                 break;
-
             }
 
+            // Check if the board is filled with player's ID in rows and columns
             for (int index_Int = 0; index_Int < 3; index_Int++)
             {
-
-                if(rows_2DArrayInt[index_Int].Cast<int>().All(x => x == ID_Int))
+                if (GameBoard.GameBoardSubStatus_Function(new int[1,1], 0, index_Int).All(element => element == ID_Int))
                 {
-
                     winner_int = ID_Int;
-
                     break;
-
                 }
 
-                if(columns_2DArrayInt[index_Int].Cast<int>().All(x => x == ID_Int))
+                if (GameBoard.GameBoardSubStatus_Function(new int[1,1], 1, index_Int).All(element => element == ID_Int))
                 {
-
                     winner_int = ID_Int;
-
                     break;
-
                 }
-                
             }
-
         }
 
-
-        if(winner_int == -1 & !GameBoard.GameBoardStatus_Function().Cast<int>().Any(x => x == 0))
+        // If no winner has been found and the board is full, it is a tie
+        if (winner_int == -1 && !GameBoard.GameBoardSubStatus_Function(new int[1,1], 4, -1).Any(element => element == 0))
         {
-
             Console.Clear();
-            
             System.Console.Write("Tied, Game Over!");
-
             MyUI.ShowMenu_Function(GameBoard.GameBoardStatus_Function(), -1, -1);
-
             System.Console.WriteLine("Press Anything To Continue");
-
             Console.ReadKey();
-
             return true;
-
         }
 
-        if(winner_int == player1_Int)
+        // If player 1 won, display the winner message and return true
+        if (winner_int == player1_Int)
         {
-
             string player_String = "";
-
             Console.Clear();
-
-            if(singlePlayer_Bool)
+            if (singlePlayer_Bool)
                 player_String = "You Won!";
             else
                 player_String = "Player 1 Won!";
-            
             System.Console.Write(player_String);
-
-            MyUI.ShowMenu_Function(GameBoard.GameBoardStatus_Function(), -1,-1);
-
+            MyUI.ShowMenu_Function(GameBoard.GameBoardStatus_Function(), -1, -1);
             System.Console.WriteLine("Press Anything To Continue");
-
             Console.ReadKey();
-
             return true;
-            
         }
 
-        if(winner_int == player2_Int)
+        // If player 2 won, display the winner message and return true
+        if (winner_int == player2_Int)
         {
-
             string player_String = "";
-
             Console.Clear();
-
-            if(singlePlayer_Bool)
+            if (singlePlayer_Bool)
                 player_String = "You Lost, Better Luck Next Time!";
             else
                 player_String = "Player 2 Won!";
-            
             System.Console.Write(player_String);
-
-            System.Console.Write("You Lost, Better Luck Next Time!");
-
-            MyUI.ShowMenu_Function(GameBoard.GameBoardStatus_Function(), -1,-1);
-
+            MyUI.ShowMenu_Function(GameBoard.GameBoardStatus_Function(), -1, -1);
             System.Console.WriteLine("Press Anything To Continue");
-
             Console.ReadKey();
-
             return true;
-        
         }
 
+        // If no winner has been found, return false
         return false;
-
     }
 
+    /// Function to check if the player wants to rematch.
     public static bool Rematch_Function()
     {
-
-        bool option_Bool = false;
-
+        // Initialize option_Bool to true and pointer_Bool to false
+        bool option_Bool = true;
         bool pointer_Bool = false;
 
-        while(!MyUI.UserInterface_Function("Rematch? (Use Up/Down Arrow Keys, Escape To Exit)", "No", "Yes", pointer_Bool,out bool valid_Bool, out bool exit_Bool))
+        // Loop until the player selects an option or exits the function
+        while(!MyUI.UserInterface_Function("Rematch? (Use Up/Down Arrow Keys, Escape To Exit)", "Yes", "No", pointer_Bool, out bool valid_Bool, out bool exit_Bool))
         {
-
-            if(exit_Bool)
+            // If the player has exited the function, call the PrematureExit_Function
+            if (exit_Bool)
                 PrematureExit_Function();
 
-            if(valid_Bool)
-                (option_Bool,pointer_Bool) = (!option_Bool,!pointer_Bool);
-
+            // If the player has selected a valid option, toggle the option_Bool and pointer_Bool
+            if (valid_Bool)
+                (option_Bool, pointer_Bool) = (!option_Bool, !pointer_Bool);
         }
 
-        if(option_Bool)
-        {
-
-            pointer_Bool = false;
-
-            sameRules_Bool = false;
-
-            while(!MyUI.UserInterface_Function("Select One (Use Up/Down Arrow Keys, Escape To Exit)", "New Game", "Same Game", pointer_Bool,out bool valid_Bool, out bool exit_Bool))
-            {
-
-                if(exit_Bool)
-                    PrematureExit_Function();
-
-                if(valid_Bool)
-                    (sameRules_Bool,pointer_Bool) = (!sameRules_Bool,!pointer_Bool);
-
-            }
-            
-        }
-
+        // Return the value of option_Bool
         return option_Bool;
-
     }
 
+    /// Function to handle a premature exit from the game.
     private static void PrematureExit_Function()
     {
-
+        // Clear the console
         Console.Clear();
 
+        // Display a message
         System.Console.WriteLine("Have A Nice Day!");
 
+        // Wait for 300 milliseconds
         Thread.Sleep(300);
 
+        // Terminate the program
         Environment.Exit(0);
-
     }
 
 }
